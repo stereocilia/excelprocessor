@@ -8,9 +8,7 @@ var columnHeadingIndex = null;
  */
 function processExcelFile(excelFilePath, action){
     var objRequestData = new excelRequest(excelFilePath, action);
-    //objRequestData.action = action;
-    //objRequestData.excelFilePath = excelFilePath;
-    //objRequestData.showPreview = true;
+    
     //if(objRequestData.excelFilePath == null){
         //throw error
     //}
@@ -18,7 +16,6 @@ function processExcelFile(excelFilePath, action){
         objRequestData.columnHeadingIndex = columnHeadingIndex;
     }
     var strRequestData = "data=" + JSON.stringify(objRequestData);
-    //$('.results').html();
     $.ajax({
         url:'processExcel.php', 
         data:strRequestData,

@@ -1,6 +1,6 @@
 <?php
 
-require_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/PHPExcel/Classes/PHPExcel.php';
+require_once 'PHPExcel\Classes\PHPExcel.php';
     /**
      * Controls how many items are returns in a preview
      * 

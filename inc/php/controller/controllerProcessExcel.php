@@ -1,7 +1,5 @@
 <?php
-//require_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/PHPExcel/Classes/PHPExcel.php';  //PHPExcel Libraryrequire_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/previewSheet.php';           //allows preview data sample of Excel file
-require_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/excelProcessor.php';
-require_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/model/modelProcessExcel.php';
+require_once ROOT_PATH . '\inc\php\model\modelProcessExcel.php';
 
 /**
  * Handles AJAX calls to process excel files
@@ -17,9 +15,8 @@ class controllerProcessExcel {
      * @return string Return value depends on the action requested
      */
     public function handleRequest(){
-        $this->requestData = json_decode($_GET['data']);
+        $this->requestData = json_decode(  stripcslashes( $_GET['data'] )  );
 
-        //TODO: maybe have a raw previw, where it doesn't try to figure anything out... just returns 50 rows or so and lets the user pick which one will be the row that contains the column header
         switch ($this->requestData->action){
             case "preview" :                                                    //see a preview with no processing
                 break;
@@ -47,8 +44,9 @@ class controllerProcessExcel {
         }
         //load the object with data from the excel file
         $objExcelProcessor = $loader->load($this->requestData->excelFilePath);
-        //send back the resulting object as JSON
-        return $objExcelProcessor->toJSON();
+        
+        if($objExcelProcessor) return $objExcelProcessor->toJSON();             //send back the resulting object as JSON
+        else return NULL;
     }
 }
 ?>

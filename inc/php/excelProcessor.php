@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/common.php';
+require_once 'common.php';
 /**
  * This does all the processing of an Excel file.
  *
@@ -12,13 +12,16 @@ class excelProcessor {
     public $ryExcelSheet = NULL;
     
     public function toJSON(){
+        //right now only processes the first sheet
         $this->excelSheet = $this->excelFile->getSheet(0);
         
         $this->ryExcelSheet = $this->excelSheet->toArray(null,true);
         
         $ryReturn = array();
         $ryReturn["dataTypes"] = $this->getColumnDataTypes();
+        //this will eventually be an array of sheets
         $ryReturn["excelData"] = $this->ryExcelSheet;
+        $ryReturn["responseStatus"] = "success";
         
         return json_encode($ryReturn);
     }

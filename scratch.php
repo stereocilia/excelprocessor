@@ -3,16 +3,12 @@
     <body>
     <p>This is a paragraph</p>
 <?php
-    $hi = "hello world";
-    echo $hi;
-    $hi = 8;
-    echo "<br>";
-    echo $hi;
-    $hi = array();
-    $hi[]=1;
-    $hi[]=2;
-    echo "<br>";
-    echo var_dump($hi);
+define(  ROOT_PATH, realpath( dirname(__FILE__) )  );
+
+require_once 'inc\php\controller\controllerProcessExcel.php';
+    phpinfo();
+    
+    echo $_SERVER["DOCUMENT_ROOT"] . '/inc/php/controller/controllerProcessExcel.php';
 ?>
     </body>
 </html>

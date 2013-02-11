@@ -1,10 +1,13 @@
 <?php
+/* All AJAX calls are made to this page, but handled by the controller. This is basically an init page. */
 
-require_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/controller/controllerProcessExcel.php';
+define(  ROOT_PATH, realpath( dirname(__FILE__) )  );
+
+require_once 'inc\php\controller\controllerProcessExcel.php';
 
 $pageController = new controllerProcessExcel();
 
-$output = $pageController->handleRequest(); //separated into two steps for debugging
-echo $output;
+echo ( $response = $pageController->handleRequest() ) ? $response : '{"responseStatus":"error"}';
 
+//NOTE: the page headers can be controlled and set as a json object
 ?>
