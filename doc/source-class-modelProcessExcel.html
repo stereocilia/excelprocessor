@@ -8,7 +8,7 @@
 	<title>File inc/php/model/modelProcessExcel.php | excelProcessor</title>
 
 	<script type="text/javascript" src="resources/combined.js?1539938019"></script>
-	<script type="text/javascript" src="elementlist.js?2605567159"></script>
+	<script type="text/javascript" src="elementlist.js?2537575242"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="resources/style.css?3505392360" />
 
 </head>
@@ -28,6 +28,7 @@
 			<h3>Classes</h3>
 			<ul>
 				<li><a href="class-controllerProcessExcel.html">controllerProcessExcel</a></li>
+				<li><a href="class-excelProcessor.html">excelProcessor</a></li>
 				<li class="active"><a href="class-modelProcessExcel.html">modelProcessExcel</a></li>
 				<li><a href="class-previewSheet.html">previewSheet</a></li>
 			</ul>
@@ -76,69 +77,71 @@
 
 <pre><code><span id="1" class="l"><a class="l" href="#1"> 1: </a><span class="xlang">&lt;?php</span>
 </span><span id="2" class="l"><a class="l" href="#2"> 2: </a><span class="php-keyword1">require_once</span> <span class="php-var">$_SERVER</span>[<span class="php-quote">&quot;DOCUMENT_ROOT&quot;</span>] . <span class="php-quote">'/inc/php/PHPExcel/Classes/PHPExcel.php'</span>;  <span class="php-comment">//PHPExcel Libraryrequire_once $_SERVER[&quot;DOCUMENT_ROOT&quot;] . '/inc/php/previewSheet.php';           //allows preview data sample of Excel file</span>
-</span><span id="3" class="l"><a class="l" href="#3"> 3: </a><span class="php-keyword1">require_once</span> <span class="php-var">$_SERVER</span>[<span class="php-quote">&quot;DOCUMENT_ROOT&quot;</span>] . <span class="php-quote">'/inc/php/previewSheet.php'</span>;           <span class="php-comment">//allows preview data sample of Excel file</span>
-</span><span id="4" class="l"><a class="l" href="#4"> 4: </a>
-</span><span id="5" class="l"><a class="l" href="#5"> 5: </a><span class="php-comment">/**
-</span></span><span id="6" class="l"><a class="l" href="#6"> 6: </a><span class="php-comment"> * Handles loading an Excel file
-</span></span><span id="7" class="l"><a class="l" href="#7"> 7: </a><span class="php-comment"> * 
-</span></span><span id="8" class="l"><a class="l" href="#8"> 8: </a><span class="php-comment"> * Create a new modelProcessExcel object. Set options that are set as public.
-</span></span><span id="9" class="l"><a class="l" href="#9"> 9: </a><span class="php-comment"> * Call load to have the resulting Excel file returned.
-</span></span><span id="10" class="l"><a class="l" href="#10">10: </a><span class="php-comment"> */</span>
-</span><span id="11" class="l"><a class="l" href="#11">11: </a><span class="php-keyword1">class</span> <a id="modelProcessExcel" href="#modelProcessExcel">modelProcessExcel</a> {
-</span><span id="12" class="l"><a class="l" href="#12">12: </a>    <span class="php-keyword1">private</span> <span class="php-var"><a id="$reader" href="#$reader">$reader</a></span> = <span class="php-keyword1">NULL</span>;                                                      <span class="php-comment">//Excel File reader object</span>
-</span><span id="13" class="l"><a class="l" href="#13">13: </a>    <span class="php-keyword1">private</span> <span class="php-var"><a id="$excelFile" href="#$excelFile">$excelFile</a></span> = <span class="php-keyword1">NULL</span>;                                                   <span class="php-comment">//Object that represent the loaded Excel File</span>
-</span><span id="14" class="l"><a class="l" href="#14">14: </a>    
-</span><span id="15" class="l"><a class="l" href="#15">15: </a>    <span class="php-comment">/**
-</span></span><span id="16" class="l"><a class="l" href="#16">16: </a><span class="php-comment">     *
-</span></span><span id="17" class="l"><a class="l" href="#17">17: </a><span class="php-comment">     * @var boolen $isPreview If set to true BEFORE calling the load function, load will return a preview of the data in the Excel file loaded. 
-</span></span><span id="18" class="l"><a class="l" href="#18">18: </a><span class="php-comment">     */</span>
-</span><span id="19" class="l"><a class="l" href="#19">19: </a>    <span class="php-keyword1">public</span> <span class="php-var"><a id="$isPreview" href="#$isPreview">$isPreview</a></span> = <span class="php-keyword1">FALSE</span>;                                                  <span class="php-comment">//True to show limited amount of rows, as set in /inc/php/previewSheet.php</span>
-</span><span id="20" class="l"><a class="l" href="#20">20: </a>    <span class="php-comment">/**
-</span></span><span id="21" class="l"><a class="l" href="#21">21: </a><span class="php-comment">     *
-</span></span><span id="22" class="l"><a class="l" href="#22">22: </a><span class="php-comment">     * @var array If set, the data types will define how they are entered into a database when commit is executed. If not set, the default values will be used.
-</span></span><span id="23" class="l"><a class="l" href="#23">23: </a><span class="php-comment">     */</span>
-</span><span id="24" class="l"><a class="l" href="#24">24: </a>    <span class="php-keyword1">public</span> <span class="php-var"><a id="$dataType" href="#$dataType">$dataType</a></span> = <span class="php-keyword1">NULL</span>;
-</span><span id="25" class="l"><a class="l" href="#25">25: </a>    <span class="php-comment">/**
-</span></span><span id="26" class="l"><a class="l" href="#26">26: </a><span class="php-comment">     * Loads an Excel file into an object in memory
-</span></span><span id="27" class="l"><a class="l" href="#27">27: </a><span class="php-comment">     * @param string $filePath The path, including file name, to the Excel file that will be loaded
-</span></span><span id="28" class="l"><a class="l" href="#28">28: </a><span class="php-comment">     * @return Object An object from the PHPExcel library that represents the loaded Excel file. 
-</span></span><span id="29" class="l"><a class="l" href="#29">29: </a><span class="php-comment">     */</span>
-</span><span id="30" class="l"><a class="l" href="#30">30: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="_load" href="#_load">load</a>(<span class="php-var">$filePath</span> = <span class="php-quote">&quot;&quot;</span>){
-</span><span id="31" class="l"><a class="l" href="#31">31: </a>        <span class="php-comment">//TODO: Verify that file exists</span>
-</span><span id="32" class="l"><a class="l" href="#32">32: </a>
-</span><span id="33" class="l"><a class="l" href="#33">33: </a>        <span class="php-comment">//This finds the appropriate reader object to read the file</span>
-</span><span id="34" class="l"><a class="l" href="#34">34: </a>        <span class="php-var">$this</span>-&gt;reader = PHPExcel_IOFactory::createReaderForFile(<span class="php-var">$filePath</span>);
-</span><span id="35" class="l"><a class="l" href="#35">35: </a>        <span class="php-comment">//Allow only data to be read with no style information</span>
-</span><span id="36" class="l"><a class="l" href="#36">36: </a>        <span class="php-comment">//$this-&gt;reader-&gt;setReadDataOnly(true);</span>
-</span><span id="37" class="l"><a class="l" href="#37">37: </a>        <span class="php-comment">//read as preview</span>
-</span><span id="38" class="l"><a class="l" href="#38">38: </a>        <span class="php-keyword1">if</span>(<span class="php-var">$this</span>-&gt;isPreview){
-</span><span id="39" class="l"><a class="l" href="#39">39: </a>           <span class="php-var">$this</span>-&gt;reader-&gt;setReadFilter( <span class="php-keyword1">new</span> previewSheet() ); 
-</span><span id="40" class="l"><a class="l" href="#40">40: </a>        }
-</span><span id="41" class="l"><a class="l" href="#41">41: </a>        
-</span><span id="42" class="l"><a class="l" href="#42">42: </a>        <span class="php-comment">//load the file into memory. this takes the longest to process.</span>
-</span><span id="43" class="l"><a class="l" href="#43">43: </a>        <span class="php-var">$this</span>-&gt;excelFile = <span class="php-var">$this</span>-&gt;reader-&gt;load(<span class="php-var">$filePath</span>);
-</span><span id="44" class="l"><a class="l" href="#44">44: </a>        
-</span><span id="45" class="l"><a class="l" href="#45">45: </a>        <span class="php-comment">//TODO: visually format the values according to their data type</span>
-</span><span id="46" class="l"><a class="l" href="#46">46: </a>        <span class="php-keyword1">return</span> <span class="php-var">$this</span>-&gt;excelFile;
-</span><span id="47" class="l"><a class="l" href="#47">47: </a>    }
-</span><span id="48" class="l"><a class="l" href="#48">48: </a>    
-</span><span id="49" class="l"><a class="l" href="#49">49: </a>    <span class="php-comment">/**
-</span></span><span id="50" class="l"><a class="l" href="#50">50: </a><span class="php-comment">     * This will commit the file to a database
-</span></span><span id="51" class="l"><a class="l" href="#51">51: </a><span class="php-comment">     */</span>
-</span><span id="52" class="l"><a class="l" href="#52">52: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="_commit" href="#_commit">commit</a>(){
-</span><span id="53" class="l"><a class="l" href="#53">53: </a>        
-</span><span id="54" class="l"><a class="l" href="#54">54: </a>    }
-</span><span id="55" class="l"><a class="l" href="#55">55: </a>    
-</span><span id="56" class="l"><a class="l" href="#56">56: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="___get" href="#___get">__get</a>(<span class="php-var">$name</span>)
-</span><span id="57" class="l"><a class="l" href="#57">57: </a>    {
-</span><span id="58" class="l"><a class="l" href="#58">58: </a>        <span class="php-keyword1">if</span> (<span class="php-keyword2">array_key_exists</span>(<span class="php-var">$name</span>, <span class="php-var">$this</span>-&gt;data)) {
-</span><span id="59" class="l"><a class="l" href="#59">59: </a>            <span class="php-keyword1">return</span> <span class="php-var">$this</span>-&gt;data[<span class="php-var">$name</span>];
-</span><span id="60" class="l"><a class="l" href="#60">60: </a>        } <span class="php-keyword1">else</span>
-</span><span id="61" class="l"><a class="l" href="#61">61: </a>            <span class="php-keyword1">return</span> <span class="php-keyword1">null</span>;
-</span><span id="62" class="l"><a class="l" href="#62">62: </a>    }
-</span><span id="63" class="l"><a class="l" href="#63">63: </a>}
-</span><span id="64" class="l"><a class="l" href="#64">64: </a><span class="xlang">?&gt;</span>
-</span><span id="65" class="l"><a class="l" href="#65">65: </a></span></code></pre>
+</span><span id="3" class="l"><a class="l" href="#3"> 3: </a><span class="php-keyword1">require_once</span> <span class="php-var">$_SERVER</span>[<span class="php-quote">&quot;DOCUMENT_ROOT&quot;</span>] . <span class="php-quote">'/inc/php/excelProcessor.php'</span>;
+</span><span id="4" class="l"><a class="l" href="#4"> 4: </a><span class="php-keyword1">require_once</span> <span class="php-var">$_SERVER</span>[<span class="php-quote">&quot;DOCUMENT_ROOT&quot;</span>] . <span class="php-quote">'/inc/php/previewSheet.php'</span>;           <span class="php-comment">//allows preview data sample of Excel file</span>
+</span><span id="5" class="l"><a class="l" href="#5"> 5: </a>
+</span><span id="6" class="l"><a class="l" href="#6"> 6: </a><span class="php-comment">/**
+</span></span><span id="7" class="l"><a class="l" href="#7"> 7: </a><span class="php-comment"> * Handles loading an Excel file
+</span></span><span id="8" class="l"><a class="l" href="#8"> 8: </a><span class="php-comment"> * 
+</span></span><span id="9" class="l"><a class="l" href="#9"> 9: </a><span class="php-comment"> * Create a new modelProcessExcel object. Set options that are set as public.
+</span></span><span id="10" class="l"><a class="l" href="#10">10: </a><span class="php-comment"> * Call load to have the resulting Excel file returned.
+</span></span><span id="11" class="l"><a class="l" href="#11">11: </a><span class="php-comment"> */</span>
+</span><span id="12" class="l"><a class="l" href="#12">12: </a><span class="php-keyword1">class</span> <a id="modelProcessExcel" href="#modelProcessExcel">modelProcessExcel</a> {
+</span><span id="13" class="l"><a class="l" href="#13">13: </a>
+</span><span id="14" class="l"><a class="l" href="#14">14: </a>     <span class="php-comment">/**
+</span></span><span id="15" class="l"><a class="l" href="#15">15: </a><span class="php-comment">     *
+</span></span><span id="16" class="l"><a class="l" href="#16">16: </a><span class="php-comment">     * @var boolen $isPreview If set to true BEFORE calling the load function, load will return a preview of the data in the Excel file loaded. 
+</span></span><span id="17" class="l"><a class="l" href="#17">17: </a><span class="php-comment">     */</span>
+</span><span id="18" class="l"><a class="l" href="#18">18: </a>    <span class="php-keyword1">public</span> <span class="php-var"><a id="$isPreview" href="#$isPreview">$isPreview</a></span> = <span class="php-keyword1">TRUE</span>;                                                  <span class="php-comment">//True to show limited amount of rows, as set in /inc/php/previewSheet.php</span>
+</span><span id="19" class="l"><a class="l" href="#19">19: </a>    <span class="php-comment">/**
+</span></span><span id="20" class="l"><a class="l" href="#20">20: </a><span class="php-comment">     *
+</span></span><span id="21" class="l"><a class="l" href="#21">21: </a><span class="php-comment">     * @var array If set, the data types will define how they are entered into a database when commit is executed. If not set, the default values will be used.
+</span></span><span id="22" class="l"><a class="l" href="#22">22: </a><span class="php-comment">     */</span>
+</span><span id="23" class="l"><a class="l" href="#23">23: </a>    <span class="php-keyword1">public</span> <span class="php-var"><a id="$dataType" href="#$dataType">$dataType</a></span> = <span class="php-keyword1">NULL</span>;
+</span><span id="24" class="l"><a class="l" href="#24">24: </a>    <span class="php-comment">/**
+</span></span><span id="25" class="l"><a class="l" href="#25">25: </a><span class="php-comment">     * Loads an Excel file into an object in memory
+</span></span><span id="26" class="l"><a class="l" href="#26">26: </a><span class="php-comment">     * @param string $filePath The path, including file name, to the Excel file that will be loaded
+</span></span><span id="27" class="l"><a class="l" href="#27">27: </a><span class="php-comment">     * @return Object An object from the PHPExcel library that represents the loaded Excel file. 
+</span></span><span id="28" class="l"><a class="l" href="#28">28: </a><span class="php-comment">     */</span>
+</span><span id="29" class="l"><a class="l" href="#29">29: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="_load" href="#_load">load</a>(<span class="php-var">$excelFileToRead</span> = <span class="php-quote">&quot;&quot;</span>){
+</span><span id="30" class="l"><a class="l" href="#30">30: </a>        <span class="php-comment">//TODO: Verify that file exists</span>
+</span><span id="31" class="l"><a class="l" href="#31">31: </a>
+</span><span id="32" class="l"><a class="l" href="#32">32: </a>        <span class="php-comment">//This finds the appropriate reader object to read the file</span>
+</span><span id="33" class="l"><a class="l" href="#33">33: </a>        <span class="php-var">$reader</span> = PHPExcel_IOFactory::createReaderForFile(<span class="php-var">$excelFileToRead</span>);
+</span><span id="34" class="l"><a class="l" href="#34">34: </a>        <span class="php-comment">//Allow only data to be read with no style information</span>
+</span><span id="35" class="l"><a class="l" href="#35">35: </a>        <span class="php-comment">//$this-&gt;reader-&gt;setReadDataOnly(true);</span>
+</span><span id="36" class="l"><a class="l" href="#36">36: </a>        <span class="php-comment">//read as preview</span>
+</span><span id="37" class="l"><a class="l" href="#37">37: </a>        <span class="php-keyword1">if</span>(<span class="php-var">$this</span>-&gt;isPreview){
+</span><span id="38" class="l"><a class="l" href="#38">38: </a>           <span class="php-var">$reader</span>-&gt;setReadFilter( <span class="php-keyword1">new</span> previewSheet() ); 
+</span><span id="39" class="l"><a class="l" href="#39">39: </a>        }
+</span><span id="40" class="l"><a class="l" href="#40">40: </a>        <span class="php-var">$objExcelProcessor</span> = <span class="php-keyword1">new</span> excelProcessor();
+</span><span id="41" class="l"><a class="l" href="#41">41: </a>        <span class="php-comment">//load the file into memory. this takes the longest to process.</span>
+</span><span id="42" class="l"><a class="l" href="#42">42: </a>        <span class="php-var">$objExcelProcessor</span>-&gt;excelFile = <span class="php-var">$reader</span>-&gt;load(<span class="php-var">$excelFileToRead</span>);
+</span><span id="43" class="l"><a class="l" href="#43">43: </a>        <span class="php-keyword1">return</span> <span class="php-var">$objExcelProcessor</span>;
+</span><span id="44" class="l"><a class="l" href="#44">44: </a>    }
+</span><span id="45" class="l"><a class="l" href="#45">45: </a>    
+</span><span id="46" class="l"><a class="l" href="#46">46: </a>    <span class="php-comment">/**
+</span></span><span id="47" class="l"><a class="l" href="#47">47: </a><span class="php-comment">     * This will commit the file to a database
+</span></span><span id="48" class="l"><a class="l" href="#48">48: </a><span class="php-comment">     */</span>
+</span><span id="49" class="l"><a class="l" href="#49">49: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="_commit" href="#_commit">commit</a>(){
+</span><span id="50" class="l"><a class="l" href="#50">50: </a>        
+</span><span id="51" class="l"><a class="l" href="#51">51: </a>    }
+</span><span id="52" class="l"><a class="l" href="#52">52: </a>    
+</span><span id="53" class="l"><a class="l" href="#53">53: </a>    <span class="php-comment">/**
+</span></span><span id="54" class="l"><a class="l" href="#54">54: </a><span class="php-comment">     * Gets private properties
+</span></span><span id="55" class="l"><a class="l" href="#55">55: </a><span class="php-comment">     * @param type $name Name of the property
+</span></span><span id="56" class="l"><a class="l" href="#56">56: </a><span class="php-comment">     * @return null Returns the request property
+</span></span><span id="57" class="l"><a class="l" href="#57">57: </a><span class="php-comment">     */</span>
+</span><span id="58" class="l"><a class="l" href="#58">58: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="___get" href="#___get">__get</a>(<span class="php-var">$name</span>)
+</span><span id="59" class="l"><a class="l" href="#59">59: </a>    {
+</span><span id="60" class="l"><a class="l" href="#60">60: </a>        <span class="php-keyword1">if</span> (<span class="php-keyword2">array_key_exists</span>(<span class="php-var">$name</span>, <span class="php-var">$this</span>-&gt;data)) {
+</span><span id="61" class="l"><a class="l" href="#61">61: </a>            <span class="php-keyword1">return</span> <span class="php-var">$this</span>-&gt;data[<span class="php-var">$name</span>];
+</span><span id="62" class="l"><a class="l" href="#62">62: </a>        } <span class="php-keyword1">else</span>
+</span><span id="63" class="l"><a class="l" href="#63">63: </a>            <span class="php-keyword1">return</span> <span class="php-keyword1">null</span>;
+</span><span id="64" class="l"><a class="l" href="#64">64: </a>    }
+</span><span id="65" class="l"><a class="l" href="#65">65: </a>}
+</span><span id="66" class="l"><a class="l" href="#66">66: </a><span class="xlang">?&gt;</span>
+</span><span id="67" class="l"><a class="l" href="#67">67: </a></span></code></pre>
 
 	<div id="footer">
 		excelProcessor API documentation generated by <a href="http://apigen.org">ApiGen 2.8.0</a>

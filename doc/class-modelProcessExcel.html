@@ -7,7 +7,7 @@
 	<title>Class modelProcessExcel | excelProcessor</title>
 
 	<script type="text/javascript" src="resources/combined.js?1539938019"></script>
-	<script type="text/javascript" src="elementlist.js?2605567159"></script>
+	<script type="text/javascript" src="elementlist.js?2537575242"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="resources/style.css?3505392360" />
 
 </head>
@@ -27,6 +27,7 @@
 			<h3>Classes</h3>
 			<ul>
 				<li><a href="class-controllerProcessExcel.html">controllerProcessExcel</a></li>
+				<li><a href="class-excelProcessor.html">excelProcessor</a></li>
 				<li class="active"><a href="class-modelProcessExcel.html">modelProcessExcel</a></li>
 				<li><a href="class-previewSheet.html">previewSheet</a></li>
 			</ul>
@@ -99,7 +100,7 @@ Call load to have the resulting Excel file returned.</p>
 		
 		
 
-		<b>Located at</b> <a href="source-class-modelProcessExcel.html#5-63" title="Go to source code">inc/php/model/modelProcessExcel.php</a><br />
+		<b>Located at</b> <a href="source-class-modelProcessExcel.html#6-65" title="Go to source code">inc/php/model/modelProcessExcel.php</a><br />
 	</div>
 
 
@@ -117,7 +118,7 @@ Call load to have the resulting Excel file returned.</p>
 
 		<td class="name"><div>
 		<a class="anchor" href="#_load">#</a>
-		<code><a href="source-class-modelProcessExcel.html#25-47" title="Go to source code">load</a>( <span>string <var>$filePath</var> = <span class="php-quote">&quot;&quot;</span></span> )</code>
+		<code><a href="source-class-modelProcessExcel.html#24-44" title="Go to source code">load</a>( <span>string <var>$excelFileToRead</var> = <span class="php-quote">&quot;&quot;</span></span> )</code>
 
 		<div class="description short">
 			
@@ -133,7 +134,7 @@ Call load to have the resulting Excel file returned.</p>
 
 				<h4>Parameters</h4>
 				<div class="list"><dl>
-					<dt><var>$filePath</var></dt>
+					<dt><var>$excelFileToRead</var></dt>
 					<dd><code>string</code><br>$filePath The path, including file name, to the Excel file that will be loaded</dd>
 				</dl></div>
 
@@ -159,7 +160,7 @@ Call load to have the resulting Excel file returned.</p>
 
 		<td class="name"><div>
 		<a class="anchor" href="#_commit">#</a>
-		<code><a href="source-class-modelProcessExcel.html#49-54" title="Go to source code">commit</a>( )</code>
+		<code><a href="source-class-modelProcessExcel.html#46-51" title="Go to source code">commit</a>( )</code>
 
 		<div class="description short">
 			
@@ -185,24 +186,37 @@ Call load to have the resulting Excel file returned.</p>
 
 		<td class="attributes"><code>
 			 public 
-			
+			null
 			
 			</code>
 		</td>
 
 		<td class="name"><div>
 		<a class="anchor" href="#___get">#</a>
-		<code><a href="source-class-modelProcessExcel.html#56-62" title="Go to source code">__get</a>( <span>mixed <var>$name</var></span> )</code>
+		<code><a href="source-class-modelProcessExcel.html#53-64" title="Go to source code">__get</a>( <span>type <var>$name</var></span> )</code>
 
 		<div class="description short">
 			
+<p>Gets private properties</p>
+
 		</div>
 
 		<div class="description detailed hidden">
 			
+<p>Gets private properties</p>
 
 
 
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$name</var></dt>
+					<dd><code>type</code><br>$name Name of the property</dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code>null</code><br>Returns the request property<br />
+				</div>
 
 
 
@@ -232,9 +246,9 @@ Call load to have the resulting Excel file returned.</p>
 		</code></td>
 
 		<td class="name">
-				<a href="source-class-modelProcessExcel.html#15-19" title="Go to source code"><var>$isPreview</var></a>
+				<a href="source-class-modelProcessExcel.html#14-18" title="Go to source code"><var>$isPreview</var></a>
 		</td>
-		<td class="value"><code><span class="php-keyword1">FALSE</span></code></td>
+		<td class="value"><code><span class="php-keyword1">TRUE</span></code></td>
 		<td class="description"><div>
 			<a href="#$isPreview" class="anchor">#</a>
 
@@ -261,7 +275,7 @@ a preview of the data in the Excel file loaded.</p>
 		</code></td>
 
 		<td class="name">
-				<a href="source-class-modelProcessExcel.html#20-24" title="Go to source code"><var>$dataType</var></a>
+				<a href="source-class-modelProcessExcel.html#19-23" title="Go to source code"><var>$dataType</var></a>
 		</td>
 		<td class="value"><code><span class="php-keyword1">NULL</span></code></td>
 		<td class="description"><div>

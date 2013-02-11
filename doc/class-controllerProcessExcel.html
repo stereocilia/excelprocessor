@@ -7,7 +7,7 @@
 	<title>Class controllerProcessExcel | excelProcessor</title>
 
 	<script type="text/javascript" src="resources/combined.js?1539938019"></script>
-	<script type="text/javascript" src="elementlist.js?2605567159"></script>
+	<script type="text/javascript" src="elementlist.js?2537575242"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="resources/style.css?3505392360" />
 
 </head>
@@ -27,6 +27,7 @@
 			<h3>Classes</h3>
 			<ul>
 				<li class="active"><a href="class-controllerProcessExcel.html">controllerProcessExcel</a></li>
+				<li><a href="class-excelProcessor.html">excelProcessor</a></li>
 				<li><a href="class-modelProcessExcel.html">modelProcessExcel</a></li>
 				<li><a href="class-previewSheet.html">previewSheet</a></li>
 			</ul>
@@ -80,8 +81,10 @@
 	
 <p>Handles AJAX calls to process excel files</p>
 
-<p>Create a new object and call handleRequest. It will return a JSON string that
-has data and other properties of the excel file.</p>
+<p>Create a new object and call handleRequest. Gets the request options for the
+Excel file and sets an object with those options. The object is passed to a
+loader where it is filled with data. The resulting data is returned as a JSON
+object. The JSON string is then returned.</p>
 
 	</div>
 
@@ -99,7 +102,7 @@ has data and other properties of the excel file.</p>
 		
 		
 
-		<b>Located at</b> <a href="source-class-controllerProcessExcel.html#6-127" title="Go to source code">inc/php/controller/controllerProcessExcel.php</a><br />
+		<b>Located at</b> <a href="source-class-controllerProcessExcel.html#6-53" title="Go to source code">inc/php/controller/controllerProcessExcel.php</a><br />
 	</div>
 
 
@@ -117,20 +120,62 @@ has data and other properties of the excel file.</p>
 
 		<td class="name"><div>
 		<a class="anchor" href="#_handleRequest">#</a>
-		<code><a href="source-class-controllerProcessExcel.html#22-43" title="Go to source code">handleRequest</a>( )</code>
+		<code><a href="source-class-controllerProcessExcel.html#15-33" title="Go to source code">handleRequest</a>( )</code>
 
 		<div class="description short">
 			
+<p>Process the GET request</p>
+
 		</div>
 
 		<div class="description detailed hidden">
 			
+<p>Process the GET request</p>
+
 
 
 
 				<h4>Returns</h4>
 				<div class="list">
 					<code>string</code><br>Return value depends on the action requested<br />
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="handleLoad" id="_handleLoad">
+
+		<td class="attributes"><code>
+			 private 
+			string
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_handleLoad">#</a>
+		<code><a href="source-class-controllerProcessExcel.html#35-52" title="Go to source code">handleLoad</a>( )</code>
+
+		<div class="description short">
+			
+<p>Call when the JSON object's property action is set to 'load'</p>
+
+		</div>
+
+		<div class="description detailed hidden">
+			
+<p>Call when the JSON object's property action is set to 'load'</p>
+
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code>string</code><br>The string returned is a JSON object that represent the ExcelSheet object that
+has been loaded<br />
 				</div>
 
 
@@ -152,6 +197,32 @@ has data and other properties of the excel file.</p>
 
 
 
+	<table class="summary" id="properties">
+	<caption>Properties summary</caption>
+	<tr data-order="requestData" id="$requestData">
+		<td class="attributes"><code>
+			private  
+			mixed
+		</code></td>
+
+		<td class="name">
+				<a href="source-class-controllerProcessExcel.html#13" title="Go to source code"><var>$requestData</var></a>
+		</td>
+		<td class="value"><code><span class="php-keyword1">NULL</span></code></td>
+		<td class="description"><div>
+			<a href="#$requestData" class="anchor">#</a>
+
+			<div class="description short">
+				
+			</div>
+
+			<div class="description detailed hidden">
+				
+
+			</div>
+		</div></td>
+	</tr>
+	</table>
 
 
 
