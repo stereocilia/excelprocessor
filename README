@@ -1,0 +1,8 @@
+Use of this library must be made in accordance with the license in the file
+LICENSE and the licenses of all other libraries used in this project.
+
+This project is a way to read Excel files through AJAX requests. It uses the 
+PHPExcel library.
+
+This project is in very early stages so documentation is limited but will be 
+created  in the future.

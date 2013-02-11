@@ -1,0 +1,69 @@
+<Overview>
+Upload a file to the server using AJAX.
+After the file is in place, make AJAX calls to processExcel.php to process
+the uploaded file.
+WHY?.
+Processing a large Excel files takes long. This allows you to have more control
+of the user's experience while a background request is process your file.
+
+<Usage>
+In your main php file, first include the jQuery library.
+Next, include 'inc/js/processExcel.js'
+Finally, you MUST implement the displayData function below
+
+function displayData(data){
+    $('.results').html(data);
+}
+
+This function receives the resulting JSON object from your request.
+The object represents data from the Excel file.
+data[0] is the first row.
+data[0][0] is the first cell of the first row
+
+All typical queries to the library are reference below. All must be passed
+the path to the file that will be processed
+
+<Reference>
+In general, when you use a function that starts with 'set' it marks a setting
+that is applied next time you run a 'get' function. This allows you to react
+to choices the users makes, then act on the excel sheet after with the new
+settings.
+
+getPreview(excelFilePath) - returns 30 rows of data from the Excel file for the
+user to preview. The return data is a JSON object that is passed to the displayData
+function you must implement
+
+
+<DEPRECATED - Reference>
+JSON Object
+The object can have these properties. Properties preceeded with [require] must
+be present of the request will fail.
+[required] excelFilePath : (string) The full path and name of the file that will be loaded. Example: "userdata/mybook.xlsx"
+showPreview : (boolean) This will return a JSON object of 20 rows of data to allow the user to preview what is being loaded.
+
+<DEPRECATED - Usage>
+Make a GET request to processExcel.php to process your excel file.
+The request must contain a query string variable named 'data' that is a JSON object.
+The JSON object describes action to perform on the Excel file.
+
+example: processExcel.php?data={"excelFilePath":"userdata/data.xlsx"}
+
+The best way to make your GET request is using AJAX so that your file can process in the
+background and the user will not think the page is stalling. 
+
+Request example:
+//this request example uses the jQuery library v 1.9
+function makeAJAXRequestWithJSON(){
+    var objRequestData = new Object();
+    objRequestData.excelFilePath = "userdata/data.xlsx";
+    var strRequestData = "data=" + JSON.stringify(objRequestData);
+
+    $.ajax({
+        url:'processExcel.php', 
+        data:strRequestData,
+        success: function(data){
+           $('.results').html(data);    //show data in an HTML element
+        },
+        dataType: "json"
+    });
+}
