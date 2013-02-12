@@ -6,14 +6,17 @@
         <?php 
             include('inc/php/jsInclude.php');                                   //includes all the javascript files needed
         ?>
-        <script>
+        <script type="text/javascript">
             var excelFilePath = "userdata/data.xlsx";                         //for debug
-            var ajaxResults = "";
+            //var ajaxResults = "";
             function handleLoadXmlClick(){
                 processExcelFile(excelFilePath, "load");
+                //excelFile.preview(excelFilePath);
+                //excelFile.load(excelFilePath);
+                //excelFile.commit(excelFilePath);
             }
             
-            //displayData function MUST be implemented
+            //displ ayData function MUST be implemented
             //do whatever you want with the returned JSON object
             function displayData(data){
                 if(data.responseStatus != "error"){
@@ -33,19 +36,16 @@
                     htmlOut += "<div>";
                     htmlOut += data.dataTypes;
                     htmlOut += "</div>";
-                    $('.results').html(htmlOut);
+                    $('#results').html(htmlOut);
                 } else {
-                    $('.results').html("Error processing your document");
+                    $('#results').html("Error processing your document");
                 }
             }
             
         </script>
     </head>
     <body>
-        <?php
-            echo "hell worlkd<br>";
-        ?>
-        <a style="cursor: pointer; text-decoration: underline;" onclick="handleLoadXmlClick();">Load XML</a>
-        <div class="results"></div>
+        <a href="javascript:handleLoadXmlClick();">Load XML</a>
+        <div id="results"></div>
     </body>
 </html>

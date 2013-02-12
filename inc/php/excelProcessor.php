@@ -5,7 +5,7 @@ require_once 'common.php';
  *
  * @author Martin Magana
  */
-class excelProcessor {
+class excelProcessor {  //excelFile
     
     public $excelFile = NULL;
     public $excelSheet = NULL;
@@ -16,7 +16,7 @@ class excelProcessor {
      */
     private function findColumnHeading(){
         //find the first row that has all consecutive cells
-        
+        // "stub it out", what is the return value?
     }
     
     public function toJSON(){
@@ -119,6 +119,9 @@ class excelProcessor {
         } else
             return null;
     }
+    
+    //get all the sheets
+    //preview all the sheets
 }
 
 ?>

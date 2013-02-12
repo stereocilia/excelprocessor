@@ -15,8 +15,11 @@ class controllerProcessExcel {
      * @return string Return value depends on the action requested
      */
     public function handleRequest(){
+        //TODO: This should be handled by the "landing page"
         $this->requestData = json_decode(  stripcslashes( $_GET['data'] )  );
 
+        //TODO: there is a better way to handle the decision to choose between actions
+        //TODO: these decision MAY be able to be called by the landing page, depending on how the problem above is solved
         switch ($this->requestData->action){
             case "preview" :                                                    //see a preview with no processing
                 break;

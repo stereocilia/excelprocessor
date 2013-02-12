@@ -7,7 +7,11 @@ require_once 'inc\php\controller\controllerProcessExcel.php';
 
 $pageController = new controllerProcessExcel();
 
+
 echo ( $response = $pageController->handleRequest() ) ? $response : '{"responseStatus":"error"}';
+
+//echo $pageController->handleRequest()
+//model should return JSON error, not NULL. the model is responsible for reporting error, not this page
 
 //NOTE: the page headers can be controlled and set as a json object
 ?>
