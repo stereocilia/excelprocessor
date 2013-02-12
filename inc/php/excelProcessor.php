@@ -24,6 +24,7 @@ class excelProcessor {
         $this->excelSheet = $this->excelFile->getSheet(0);
         
         $this->ryExcelSheet = $this->excelSheet->toArray();
+        //$this->removeNullRows();
         
         $ryReturn = array();
         $ryReturn["dataTypes"] = $this->getColumnDataTypes();
@@ -87,8 +88,28 @@ class excelProcessor {
     }
     
     //TODO: error in formatting makes rows with all empty cells appear (null). these should be removed
+    /**
+     * Removes rows that have all cells set to null
+     */
     private function removeNullRows(){
-        
+        if($this->ryExcelSheet){
+            $ryExcelSheetTemp = array();
+            $cellCount = count($this->ryExcelSheet[0]);
+            foreach($this->ryExcelSheet as $row){
+                if($row[0] == "null"){  //if the first cell is null, check each each cell
+                    $isAllNull = TRUE;
+                    for($i=1;$i<$cellCount;$i++){
+                        if($row[$i] != "null"){
+                            $isAllNull = FALSE;
+                        }
+                    }
+                    if(!$isAllNull){ //this row shall be kept
+                        $ryExcelSheetTemp[] = $row;
+                    }
+                }
+            }
+            $this->ryExcelSheet = $ryExcelSheetTemp;
+        }
     }
 
     public function __get($name)
