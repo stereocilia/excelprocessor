@@ -13,10 +13,9 @@ require_once 'PHPExcel\Classes\PHPExcel.php';
 
             public function readCell($column, $row, $worksheetName = '') {
                     // Read title row and rows 20 - 30
-                    if ($row >= $this->startRow && $row <= $this->stopRow) {
+                    if ($row<20) {
                             return true;
-                    }
-                    return false;
+                    } else return false;
             }
     }
 ?>

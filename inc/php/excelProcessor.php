@@ -11,11 +11,19 @@ class excelProcessor {
     public $excelSheet = NULL;
     public $ryExcelSheet = NULL;
     
+    /**
+     * Tries to find the row containing the names for all the columns
+     */
+    private function findColumnHeading(){
+        //find the first row that has all consecutive cells
+        
+    }
+    
     public function toJSON(){
         //right now only processes the first sheet
         $this->excelSheet = $this->excelFile->getSheet(0);
         
-        $this->ryExcelSheet = $this->excelSheet->toArray(null,true);
+        $this->ryExcelSheet = $this->excelSheet->toArray();
         
         $ryReturn = array();
         $ryReturn["dataTypes"] = $this->getColumnDataTypes();
@@ -78,6 +86,11 @@ class excelProcessor {
         return $cellTypes;
     }
     
+    //TODO: error in formatting makes rows with all empty cells appear (null). these should be removed
+    private function removeNullRows(){
+        
+    }
+
     public function __get($name)
     {
         if (array_key_exists($name, $this->data)) {

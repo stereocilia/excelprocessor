@@ -7,7 +7,7 @@
             include('inc/php/jsInclude.php');                                   //includes all the javascript files needed
         ?>
         <script>
-            var excelFilePath = "userdata/data.xlsx";
+            var excelFilePath = "userdata/data.xlsx";                         //for debug
             var ajaxResults = "";
             function handleLoadXmlClick(){
                 processExcelFile(excelFilePath, "load");
