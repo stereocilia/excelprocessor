@@ -5,7 +5,7 @@ require_once 'common.php';
  *
  * @author Martin Magana
  */
-class excelProcessor {  //excelFile
+class excelFile {  //excelFile
     
     public $excelFile = NULL;
     public $excelSheet = NULL;

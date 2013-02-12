@@ -1,6 +1,6 @@
 <?php
 require_once ROOT_PATH . '\inc\php\PHPExcel\Classes\PHPExcel.php';  //PHPExcel Libraryrequire_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/previewSheet.php';           //allows preview data sample of Excel file
-require_once ROOT_PATH . '\inc\php\excelProcessor.php';
+require_once ROOT_PATH . '\inc\php\excelFile.php';
 require_once ROOT_PATH . '\inc\php\previewSheet.php';           //allows preview data sample of Excel file
 
 /**
@@ -35,7 +35,7 @@ class modelProcessExcel {
             if($this->isPreview){
                $reader->setReadFilter( new previewSheet() ); 
             }
-            $objExcelProcessor = new excelProcessor();
+            $objExcelProcessor = new excelFile();
             //load the file into memory. this takes the longest to process.
             $objExcelProcessor->excelFile = $reader->load($excelFileToRead);
             return $objExcelProcessor;
