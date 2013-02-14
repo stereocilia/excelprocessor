@@ -1,6 +1,6 @@
 <?php
 require_once ROOT_PATH . '\inc\php\PHPExcel\Classes\PHPExcel.php';  //PHPExcel Libraryrequire_once $_SERVER["DOCUMENT_ROOT"] . '/inc/php/previewSheet.php';           //allows preview data sample of Excel file
-require_once ROOT_PATH . '\inc\php\excelFile.php';
+require_once ROOT_PATH . '\inc\php\excelWorksheet.php';
 require_once ROOT_PATH . '\inc\php\previewSheet.php';           //allows preview data sample of Excel file
 
 /**

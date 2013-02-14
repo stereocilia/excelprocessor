@@ -17,7 +17,7 @@ function processExcelFile(excelFilePath, action){
     }
     var strRequestData = "data=" + JSON.stringify(objRequestData);
     $.ajax({
-        url:'processExcel.php', 
+        url:'excelTransaction.php', 
         data:strRequestData,
         success: function(data){
            displayData(data); 

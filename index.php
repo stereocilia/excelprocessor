@@ -13,7 +13,7 @@
             include('inc/php/jsInclude.php');                                   //includes all the javascript files needed
         ?>
         <script type="text/javascript">
-            var excelFilePath = "userdata/Idaho_MarshBird_2008_edit.xlsx";                         //for debug
+            var excelFilePath = "userdata/Idaho_MarshBird_2008.xlsx";                         //for debug
             var loadingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
             function handleLoadXmlClick(){
                 $('#results').html(loadingMessage);

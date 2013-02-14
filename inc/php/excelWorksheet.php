@@ -30,24 +30,50 @@ class excelWorkbook {  //excelFile
      * @return Returns the index of the row that appears to conatin the column headings
      */
     public function findColumnIndex(){   //right now, just the first worksheet. it will have to eventually cycle throw all sheets
-        
+    //
         //find the first row that has all consecutive cells
-        return 0;
+        $i = 0;
+        $rowCount = count( $this->ryExcelSheet );
+        $columnIndex = NULL;
+        
+        while( $columnIndex === NULL ){ //if you find the column index or run out of columns, stop
+            
+            $noEmptyCells = TRUE;                           //assume this row has no empty cells
+            foreach($this->ryExcelSheet[$i] as $cell){      //go through each cell of this row
+                if(  empty( $cell ) || $cell == "null" ){                     //if the cell is empty
+                    $noEmptyCells = FALSE;                  //mark false
+                }                
+            }
+
+            if($noEmptyCells){                              //if not cells have been marked empty, set this as the column index
+                $columnIndex = $i;
+            }
+            
+            if(++$i == $rowCount){                            //if you are the end of the rows and haven't found the columnIndex, just set it to 0 for now
+                $columnIndex = 0;
+            }
+        }
+        
+        return $columnIndex;
     }
     
     public function toJSON(){
         if($this->excelFile){
-        
-            //$columnHeadingIndex = $this->findColumnHeading($this->ryExcelSheet);    //find the column heading of a single excel sheet
-
+            
             $ryReturn = array();
+            
             $ryReturn["dataTypes"] = $this->getColumnDataTypes();
+            
             $ryReturn["excelData"] = $this->ryExcelSheet;                       //this will eventually be an array of sheets
+            
             $ryReturn["responseStatus"] = "success";
 
             return json_encode($ryReturn);
+            
         } else {
+            
             return '{"responseStatus":"error"}';    //if there is no excel file, and error must be reported
+            
         }
     }
     
