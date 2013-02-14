@@ -5,34 +5,50 @@ require_once 'common.php';
  *
  * @author Martin Magana
  */
-class excelFile {  //excelFile
+class excelWorkbook {  //excelFile
     
     public $excelFile = NULL;
     public $excelSheet = NULL;
     public $ryExcelSheet = NULL;
     
+    public function __construct($excelFile = NULL) {
+        $this->excelFile = $excelFile;
+        if($this->excelFile){
+            //get as much information from the file as you can, here
+            
+            //for now, just processing the first sheet
+            $this->excelSheet = $this->excelFile->getSheet(0);
+
+            $this->ryExcelSheet = $this->excelSheet->toArray();
+            $this->removeNullRows();
+        }
+    }
+    
     /**
      * Tries to find the row containing the names for all the columns
+     * 
+     * @return Returns the index of the row that appears to conatin the column headings
      */
-    private function findColumnHeading(){
+    public function findColumnIndex(){   //right now, just the first worksheet. it will have to eventually cycle throw all sheets
+        
         //find the first row that has all consecutive cells
-        // "stub it out", what is the return value?
+        return 0;
     }
     
     public function toJSON(){
-        //right now only processes the first sheet
-        $this->excelSheet = $this->excelFile->getSheet(0);
+        if($this->excelFile){
         
-        $this->ryExcelSheet = $this->excelSheet->toArray();
-        //$this->removeNullRows();
-        
-        $ryReturn = array();
-        $ryReturn["dataTypes"] = $this->getColumnDataTypes();
-        //this will eventually be an array of sheets
-        $ryReturn["excelData"] = $this->ryExcelSheet;
-        $ryReturn["responseStatus"] = "success";
-        
-        return json_encode($ryReturn);
+            //$columnHeadingIndex = $this->findColumnHeading($this->ryExcelSheet);    //find the column heading of a single excel sheet
+
+            $ryReturn = array();
+            $ryReturn["dataTypes"] = $this->getColumnDataTypes();
+            $ryReturn["excelData"] = $this->ryExcelSheet;                       //this will eventually be an array of sheets
+            $ryReturn["responseStatus"] = "success";
+
+            return json_encode($ryReturn);
+        } else {
+            return '{"responseStatus":"error"}';    //if there is no excel file, and error must be reported
+        }
     }
     
    /**
@@ -64,12 +80,17 @@ class excelFile {  //excelFile
         return $cellTypes;
     }
     private function handleNumericType($number){
-        if( is_time($number) )
+        $isTime = is_time($number);
+        $isDate = is_date( str_replace('-', '/', $number) );    //the '-' character seems to not register with strtotime, so replacing it with '/' character
+        if( $isTime ){
             return "time";
-        elseif( is_date($number) )
+        }
+        if( $isDate ){
             return "date";
-        else
+        } 
+        if(!$isTime && !$isDate) {
             return "number";
+        }
     }
     /**
      * Gets primative data types of all columns for the current excelSheet of $this object
@@ -87,25 +108,26 @@ class excelFile {  //excelFile
         return $cellTypes;
     }
     
-    //TODO: error in formatting makes rows with all empty cells appear (null). these should be removed
     /**
-     * Removes rows that have all cells set to null
+     * Removes rows that have all cells set to null in the ryExcelSheet private member
      */
     private function removeNullRows(){
         if($this->ryExcelSheet){
             $ryExcelSheetTemp = array();
-            $cellCount = count($this->ryExcelSheet[0]);
-            foreach($this->ryExcelSheet as $row){
-                if($row[0] == "null"){  //if the first cell is null, check each each cell
-                    $isAllNull = TRUE;
-                    for($i=1;$i<$cellCount;$i++){
-                        if($row[$i] != "null"){
+            $cellCount = count($this->ryExcelSheet[0]); //trying to get the count of total cells in a single row
+            foreach($this->ryExcelSheet as $row){       //going through each row
+                if($row[0] == null){  //if the first cell is null, check each each cell
+                    $isAllNull = TRUE;  //assume all of the cells are null unless one is found with data
+                    for($i=1;$i<$cellCount;$i++){       //now find a cell that does not have null
+                        if($row[$i] != null){
                             $isAllNull = FALSE;
                         }
                     }
                     if(!$isAllNull){ //this row shall be kept
                         $ryExcelSheetTemp[] = $row;
                     }
+                } else {
+                   $ryExcelSheetTemp[] = $row;  //this row should be kept because it the first cell was not null
                 }
             }
             $this->ryExcelSheet = $ryExcelSheetTemp;

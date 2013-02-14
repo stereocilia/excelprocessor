@@ -8,14 +8,20 @@ require_once 'PHPExcel\Classes\PHPExcel.php';
      */
     class previewSheet implements PHPExcel_Reader_IReadFilter
     {
-            private $startRow = 1;
-            private $stopRow = 10;
+            private $startRow = 0;
+            private $stopRow = 0;
+            
+            public function __construct($startRow = 1, $stopRow = 10) {
+                $this->startRow = $startRow;
+                $this->stopRow = $stopRow;
+            }
 
             public function readCell($column, $row, $worksheetName = '') {
-                    // Read title row and rows 20 - 30
-                    if ($row<20) {
-                            return true;
-                    } else return false;
+                    if ($row >= $this->startRow && $row <= $this->stopRow) {
+                        return true;
+                    } else { 
+                        return false;
+                    }
             }
     }
 ?>

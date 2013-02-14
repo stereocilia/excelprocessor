@@ -12,11 +12,12 @@ class controllerProcessExcel {
     
     /**
      * Process the GET request
+     * @param a JSON object that represents the data send with the original HTTP GET request
      * @return string Return value depends on the action requested
      */
-    public function handleRequest(){
-        //TODO: This should be handled by the "landing page"
-        $this->requestData = json_decode(  stripcslashes( $_GET['data'] )  );
+    public function handleRequest($requestData){
+
+        $this->requestData = $requestData;
 
         //TODO: there is a better way to handle the decision to choose between actions
         //TODO: these decision MAY be able to be called by the landing page, depending on how the problem above is solved
@@ -45,11 +46,23 @@ class controllerProcessExcel {
                 $loader->isPreview = FALSE;
             }
         }
-        //load the object with data from the excel file
-        $objExcelProcessor = $loader->load($this->requestData->excelFilePath);
+        $loader->previewLength = 2;                                             //how many rows will be previewed. default to 10
         
-        if($objExcelProcessor) return $objExcelProcessor->toJSON();             //send back the resulting object as JSON
-        else return NULL;
+        //this function must be responsible for finding the column index
+        //why?
+        //because data may have to be taken from the excel file twice.
+        //the excel file object cannot call itself to be loaded, that doesn't make sense.
+        //this is the next best place I can think of since it asks for object to be loaded
+        $excelWorksheet = $loader->load($this->requestData->excelFilePath);  //load the object with data from the excel file
+        //call the method for finding the column heading, get and index back
+        $columnIndex = $excelWorksheet->findColumnIndex();
+        if($columnIndex != 0){
+            //now load the file again with the new index if its not 0
+            $loader->columnIndex = $columnIndex;
+            $excelWorksheet = $loader->load($this->requestData->excelFilePath); 
+        }
+        
+        return $excelWorksheet->toJSON();             //send back the resulting object as JSON
     }
 }
 ?>

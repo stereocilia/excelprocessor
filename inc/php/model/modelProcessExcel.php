@@ -10,6 +10,8 @@ require_once ROOT_PATH . '\inc\php\previewSheet.php';           //allows preview
  * Call load to have the resulting Excel file returned.
  */
 class modelProcessExcel {
+    public $columnIndex = 1;                                                    //this will be the first row returned from the preview
+    public $previewLength = 10;                                                 //how many rows will be displayed with the preview
      /**
      *
      * @var boolen $isPreview If set to true BEFORE calling the load function, load will return a preview of the data in the Excel file loaded. 
@@ -29,24 +31,22 @@ class modelProcessExcel {
         if(file_exists($excelFileToRead)){
             //This finds the appropriate reader object to read the file
             $reader = PHPExcel_IOFactory::createReaderForFile($excelFileToRead);
-            //Allow only data to be read with no style information
-            //$this->reader->setReadDataOnly(true);
-            //read as preview
-            if($this->isPreview){
-               $reader->setReadFilter( new previewSheet() ); 
+            if($this->isPreview){                                               //read as preview
+               $reader->setReadFilter( new previewSheet($this->columnIndex, $this->columnIndex + $this->previewLength) );
             }
-            $objExcelProcessor = new excelFile();
-            //load the file into memory. this takes the longest to process.
-            $objExcelProcessor->excelFile = $reader->load($excelFileToRead);
-            return $objExcelProcessor;
-        } else return NULL;
+            $loadedWorksheet = $reader->load($excelFileToRead);                 //load the file into memory. this takes the longest to process.
+            $excelWorksheet = new excelWorkbook($loadedWorksheet);             //wrap the PHPExcel file in our excelWorksheet class
+            return $excelWorksheet;
+        } else {
+            return new excelWorkbook();    //returning an empty excelWorksheet will produce an error when it is converted to JSON. Since the file could not be loaded, this object represents that.
+        }
     }
     
     /**
      * This will commit the file to a database
      */
     public function commit(){
-        
+        //TODO: stub out
     }
     
     /**
