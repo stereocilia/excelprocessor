@@ -12,6 +12,7 @@ class excelWorkbook {
     public $excelWorkbook = NULL;
     public $excelWorksheet = NULL;
     public $ryExcelWorksheet = NULL;
+    public $columnIndex = 1;
     
     public function __construct($excelFile = NULL) {
         $this->excelWorkbook = $excelFile;
@@ -22,7 +23,7 @@ class excelWorkbook {
             $this->excelWorksheet = $this->excelWorkbook->getSheet(0);
 
             $this->ryExcelWorksheet = $this->excelWorksheet->toArray();
-            //$this->removeNullRows();
+
         }
     }
     
@@ -140,22 +141,17 @@ class excelWorkbook {
     /**
      * Gets primative data types of all columns for the current excelSheet of $this object
      * 
-     * I may deprecate this function since the getDataType function of a cell isn't very useful and the iterator functions are having problems.
-     * It's creating trouble and I don't real gain anything from it
-     * 
-     * @return type
+     * @return array The data types for each cell as given by PHPExcel_Cell->getDataType()
      */
     private function getColumnPrimitiveDataTypes(){
-        //TODO: For some reason this is retrieving empty cells, wtf?
         $rowIterator = $this->excelWorksheet->getRowIterator();
-        $rowIterator->next();   //find the second row
-        //$rowIterator->next();   //find the second row
-        $row = $rowIterator->current();
-        $cells = $row->getCellIterator();
-        //$cells->setIterateOnlyExistingCells(false);
+        //get the iterator one row after the column index
+        for($i=1;$i<=$this->columnIndex;$i++){
+            $rowIterator->next();
+        }
+        //get the generic data types for each cell and store them in an array
         $cellTypes = array();
-        
-        foreach($cells as $cell){
+        foreach($rowIterator->current()->getCellIterator() as $cell){
             //get the type for each cell
             $cellTypes[]=$cell->getDataType();
         }

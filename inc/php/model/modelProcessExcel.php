@@ -36,6 +36,7 @@ class modelProcessExcel {
             }
             $loadedWorksheet = $reader->load($excelFileToRead);                 //load the file into memory. this takes the longest to process.
             $excelWorksheet = new excelWorkbook($loadedWorksheet);             //wrap the PHPExcel file in our excelWorksheet class
+            $excelWorksheet->columnIndex = $this->columnIndex;
             return $excelWorksheet;
         } else {
             return new excelWorkbook();    //returning an empty excelWorksheet will produce an error when it is converted to JSON. Since the file could not be loaded, this object represents that.

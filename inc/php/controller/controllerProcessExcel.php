@@ -46,7 +46,7 @@ class controllerProcessExcel {
                 $loader->isPreview = FALSE;
             }
         }
-        $loader->previewLength = 5;                                             //how many rows will be previewed. default to 10
+        $loader->previewLength = 10;                                             //how many rows will be previewed. default to 10
         
         $excelWorksheet = $loader->load($this->requestData->excelFilePath);  //load the object with data from the excel file
         
