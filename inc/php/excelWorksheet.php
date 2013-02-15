@@ -9,19 +9,19 @@ require_once 'common.php';
  */
 class excelWorkbook {
     
-    public $excelFile = NULL;
-    public $excelSheet = NULL;
-    public $ryExcelSheet = NULL;
+    public $excelWorkbook = NULL;
+    public $excelWorksheet = NULL;
+    public $ryExcelWorksheet = NULL;
     
     public function __construct($excelFile = NULL) {
-        $this->excelFile = $excelFile;
-        if($this->excelFile){
+        $this->excelWorkbook = $excelFile;
+        if($this->excelWorkbook){
             //get as much information from the file as you can, here
             
             //for now, just processing the first sheet
-            $this->excelSheet = $this->excelFile->getSheet(0);
+            $this->excelWorksheet = $this->excelWorkbook->getSheet(0);
 
-            $this->ryExcelSheet = $this->excelSheet->toArray();
+            $this->ryExcelWorksheet = $this->excelWorksheet->toArray();
             //$this->removeNullRows();
         }
     }
@@ -37,7 +37,7 @@ class excelWorkbook {
         $ryDataFilledCellCounts = array();
         $columnIndex = NULL;
         
-        foreach($this->ryExcelSheet as $row){   //go through each row
+        foreach($this->ryExcelWorksheet as $row){   //go through each row
             $dataFilledCellCount = 0;
             $isConsecutive = TRUE;            
             foreach ($row as $cell){            //go through each cell
@@ -75,7 +75,7 @@ class excelWorkbook {
     }
     
     public function toJSON(){
-        if($this->excelFile){
+        if($this->excelWorkbook){
             
             $this->removeNullRows();
             
@@ -83,7 +83,7 @@ class excelWorkbook {
             
             $ryReturn["dataTypes"] = $this->getColumnDataTypes();
             
-            $ryReturn["excelData"] = $this->ryExcelSheet;                       //this will eventually be an array of sheets
+            $ryReturn["excelData"] = $this->ryExcelWorksheet;                       //this will eventually be an array of sheets
             
             $ryReturn["responseStatus"] = "success";
 
@@ -103,7 +103,7 @@ class excelWorkbook {
         $this->primitiveTypes = $this->getColumnPrimitiveDataTypes();           //get what the PHPExcel library says the data types are
         $cellTypes = array();
         $i = 0;
-        $xlSheet = $this->ryExcelSheet[1];
+        $xlSheet = $this->ryExcelWorksheet[1];
         foreach($xlSheet as $cell){
             //get the type for each cell
             switch($this->primitiveTypes[$i]){
@@ -139,14 +139,23 @@ class excelWorkbook {
     }
     /**
      * Gets primative data types of all columns for the current excelSheet of $this object
+     * 
+     * I may deprecate this function since the getDataType function of a cell isn't very useful and the iterator functions are having problems.
+     * It's creating trouble and I don't real gain anything from it
+     * 
      * @return type
      */
     private function getColumnPrimitiveDataTypes(){
-        $rowIterator = $this->excelSheet->getRowIterator();
+        //TODO: For some reason this is retrieving empty cells, wtf?
+        $rowIterator = $this->excelWorksheet->getRowIterator();
         $rowIterator->next();   //find the second row
+        //$rowIterator->next();   //find the second row
         $row = $rowIterator->current();
+        $cells = $row->getCellIterator();
+        //$cells->setIterateOnlyExistingCells(false);
         $cellTypes = array();
-        foreach($row->getCellIterator() as $cell){
+        
+        foreach($cells as $cell){
             //get the type for each cell
             $cellTypes[]=$cell->getDataType();
         }
@@ -157,26 +166,44 @@ class excelWorkbook {
      * Removes rows that have all cells set to null in the ryExcelSheet private member
      */
     public function removeNullRows($startIndex = 0){
-        if($this->ryExcelSheet){
+        if($this->ryExcelWorksheet){
             $ryExcelSheetTemp = array();
-            for($i=$startIndex;$i<count($this->ryExcelSheet);$i++){
-                if($this->ryExcelSheet[$i][0] == null){  //if the first cell is null, check each each cell
+            for($i=$startIndex;$i<count($this->ryExcelWorksheet);$i++){
+                if($this->ryExcelWorksheet[$i][0] == null){  //if the first cell is null, check each each cell
                     $isAllNull = TRUE;  //assume all of the cells are null unless one is found with data
                     
-                    foreach($this->ryExcelSheet[$i] as $cell){       //now find a cell that does not have null
+                    foreach($this->ryExcelWorksheet[$i] as $cell){       //now find a cell that does not have null
                         if($cell != null){
                             $isAllNull = FALSE;
                         }
                     }
                     if(!$isAllNull){ //this row shall be kept because a cell was found that was not null
-                        $ryExcelSheetTemp[] = $this->ryExcelSheet[$i];
+                        $ryExcelSheetTemp[] = $this->ryExcelWorksheet[$i];
                     }
                 } else {
-                   $ryExcelSheetTemp[] = $this->ryExcelSheet[$i];  //this row should be kept because it the first cell was not null
+                   $ryExcelSheetTemp[] = $this->ryExcelWorksheet[$i];  //this row should be kept because it the first cell was not null
                 }
             }
-            $this->ryExcelSheet = $ryExcelSheetTemp;
+            $this->ryExcelWorksheet = $ryExcelSheetTemp;
         }
+    }
+    /**
+     * Finds the most occuring length of a row
+     */
+    private function mostCommonRowLength(){
+        //get the cell count for each row
+        //store in array
+        //create a new array for the counts
+        //loop through the original array
+        //see if the original array has a key value of the value from the current loop
+        //if not, create it as a key with the integer 1
+        //if the original array does have the key value, increment it by 1
+        //loop through the counts array
+        //set the key of the first value to a var called highestCount
+        //compare each value to highestCount
+        //if the value is greater than the count of highestCounut, set it as the new key
+        //return the count of the key with the greatest value, this is the most common row length
+        return 0;   //do this for now until the function is implemented
     }
 
     public function __get($name)
