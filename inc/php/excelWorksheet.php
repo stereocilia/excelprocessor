@@ -32,26 +32,38 @@ class excelWorkbook {  //excelFile
     public function findColumnIndex(){   //right now, just the first worksheet. it will have to eventually cycle throw all sheets
     //
         //find the first row that has all consecutive cells
-        $i = 0;
-        $rowCount = count( $this->ryExcelSheet );
+        $ryDataFilledCellCounts = array();
         $columnIndex = NULL;
         
-        while( $columnIndex === NULL ){ //if you find the column index or run out of columns, stop
-            
-            $noEmptyCells = TRUE;                           //assume this row has no empty cells
-            foreach($this->ryExcelSheet[$i] as $cell){      //go through each cell of this row
-                if(  empty( $cell ) || $cell == "null" ){                     //if the cell is empty
-                    $noEmptyCells = FALSE;                  //mark false
-                }                
+        foreach($this->ryExcelSheet as $row){   //go through each row
+            $dataFilledCellCount = 0;
+            $isConsecutive = TRUE;            
+            foreach ($row as $cell){            //go through each cell
+               if(  ( empty($cell) || $cell == "null" ) && $isConsecutive ){    //if the cell is considered empty AND the cells are still considered consecutive
+                   $isConsecutive = FALSE;                               //then we are done doing a cell count
+               } elseif($isConsecutive) {                           //if the cells are still consecutive
+                   $dataFilledCellCount++;              //if the cell is not empty, count it
+               }
             }
-
-            if($noEmptyCells){                              //if not cells have been marked empty, set this as the column index
-                $columnIndex = $i;
+            $ryDataFilledCellCounts[] = $dataFilledCellCount;
+        }
+        //find which row had the high count of consecutive data filled cells
+        //return the index of that row
+        $highestCount = 0;
+        foreach($ryDataFilledCellCounts as $count){
+            if($count>$highestCount){
+                $highestCount = $count;
             }
-            
-            if(++$i == $rowCount){                            //if you are the end of the rows and haven't found the columnIndex, just set it to 0 for now
-                $columnIndex = 0;
+        }
+        //now find the first occurance of the highest count
+        $i = 1;
+        foreach ($ryDataFilledCellCounts as $count){
+            if($columnIndex === NULL){
+                if($count == $highestCount){
+                    $columnIndex = $i;
+                }
             }
+            $i++;
         }
         
         return $columnIndex;
