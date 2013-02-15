@@ -1,11 +1,13 @@
 <?php
 require_once 'common.php';
 /**
- * This does all the processing of an Excel file.
+ * An excel worksheet loaded into memory
+ * 
+ * This is a wrapper class for PHPExcel
  *
  * @author Martin Magana
  */
-class excelWorkbook {  //excelFile
+class excelWorkbook {
     
     public $excelFile = NULL;
     public $excelSheet = NULL;
@@ -20,7 +22,7 @@ class excelWorkbook {  //excelFile
             $this->excelSheet = $this->excelFile->getSheet(0);
 
             $this->ryExcelSheet = $this->excelSheet->toArray();
-            $this->removeNullRows();
+            //$this->removeNullRows();
         }
     }
     
@@ -47,6 +49,9 @@ class excelWorkbook {  //excelFile
             }
             $ryDataFilledCellCounts[] = $dataFilledCellCount;
         }
+        
+        //? Why did it only count four cells?
+        
         //find which row had the high count of consecutive data filled cells
         //return the index of that row
         $highestCount = 0;
@@ -71,6 +76,8 @@ class excelWorkbook {  //excelFile
     
     public function toJSON(){
         if($this->excelFile){
+            
+            $this->removeNullRows();
             
             $ryReturn = array();
             
@@ -149,23 +156,23 @@ class excelWorkbook {  //excelFile
     /**
      * Removes rows that have all cells set to null in the ryExcelSheet private member
      */
-    private function removeNullRows(){
+    public function removeNullRows($startIndex = 0){
         if($this->ryExcelSheet){
             $ryExcelSheetTemp = array();
-            $cellCount = count($this->ryExcelSheet[0]); //trying to get the count of total cells in a single row
-            foreach($this->ryExcelSheet as $row){       //going through each row
-                if($row[0] == null){  //if the first cell is null, check each each cell
+            for($i=$startIndex;$i<count($this->ryExcelSheet);$i++){
+                if($this->ryExcelSheet[$i][0] == null){  //if the first cell is null, check each each cell
                     $isAllNull = TRUE;  //assume all of the cells are null unless one is found with data
-                    for($i=1;$i<$cellCount;$i++){       //now find a cell that does not have null
-                        if($row[$i] != null){
+                    
+                    foreach($this->ryExcelSheet[$i] as $cell){       //now find a cell that does not have null
+                        if($cell != null){
                             $isAllNull = FALSE;
                         }
                     }
-                    if(!$isAllNull){ //this row shall be kept
-                        $ryExcelSheetTemp[] = $row;
+                    if(!$isAllNull){ //this row shall be kept because a cell was found that was not null
+                        $ryExcelSheetTemp[] = $this->ryExcelSheet[$i];
                     }
                 } else {
-                   $ryExcelSheetTemp[] = $row;  //this row should be kept because it the first cell was not null
+                   $ryExcelSheetTemp[] = $this->ryExcelSheet[$i];  //this row should be kept because it the first cell was not null
                 }
             }
             $this->ryExcelSheet = $ryExcelSheetTemp;

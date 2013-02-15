@@ -48,16 +48,10 @@ class controllerProcessExcel {
         }
         $loader->previewLength = 5;                                             //how many rows will be previewed. default to 10
         
-        //this function must be responsible for finding the column index
-        //why?
-        //because data may have to be taken from the excel file twice.
-        //the excel file object cannot call itself to be loaded, that doesn't make sense.
-        //this is the next best place I can think of since it asks for object to be loaded
-        
-        
         $excelWorksheet = $loader->load($this->requestData->excelFilePath);  //load the object with data from the excel file
         
-        //call the method for finding the column heading, get and index back
+        //$excelWorksheet->removeNullRows($loader->previewLength-1);  //remove rows outside of the preview length
+        //call the method for finding the column heading, get an index back
         $columnIndex = $excelWorksheet->findColumnIndex();
         
         if($columnIndex != 0){

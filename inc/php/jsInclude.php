@@ -5,6 +5,10 @@
         $scriptSuffix = "?" . time();   //this will not allow the script to be cached because it is different eveytime
     }
 ?>
+<?php if(IS_DEV) : ?>
 <script type="text/javascript" src="inc/js/jquery-1.9.1.js"></script>
+<?php else : ?>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<?php endif; ?>
 <script type="text/javascript" src="inc/js/excelRequest.js<?php echo $scriptSuffix; ?>"></script>
 <script type="text/javascript" src="inc/js/processExcel.js<?php echo $scriptSuffix; ?>"></script>
