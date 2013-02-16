@@ -6,7 +6,7 @@ require_once 'PHPExcel\Classes\PHPExcel.php';
      * 
      * Change the class properties $startRow and $stopRow to change the range
      */
-    class previewSheet implements PHPExcel_Reader_IReadFilter
+    class previewFilter implements PHPExcel_Reader_IReadFilter
     {
             private $startRow = 0;
             private $stopRow = 0;
