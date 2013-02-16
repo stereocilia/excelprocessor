@@ -1,6 +1,5 @@
 <?php
 require_once 'common.php';
-require_once ROOT_PATH . '\inc\php\PHPExcel\Classes\PHPExcel.php';
 /**
  * An excel worksheet loaded into memory
  * 
@@ -9,11 +8,19 @@ require_once ROOT_PATH . '\inc\php\PHPExcel\Classes\PHPExcel.php';
  * @author Martin Magana
  */
 class excelWorkbook {
+    /**
+     * The first PHPExcel_Worksheet
+     * 
+     * This will have to be changed when all worksheets are processed
+     * 
+     * @var PHPExcel_Worksheet 
+     */
+    private $_excelWorksheet = NULL;
     
     /**
      * Represents data in worksheet as an array
      * 
-     * @var type 
+     * @var array 
      */
     private $_ryExcelWorksheet = NULL;
     
@@ -25,15 +32,6 @@ class excelWorkbook {
     public $excelWorkbook = NULL;
     
     /**
-     * The first PHPExcel_Worksheet
-     * 
-     * This will have to be changed when all worksheets are processed
-     * 
-     * @var PHPExcel_Worksheet 
-     */
-    public $excelWorksheet = NULL;
-    
-    /**
      * Index of the row that is assumed to contain the column headings
      * 
      * @var integer 
@@ -43,10 +41,10 @@ class excelWorkbook {
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
         $this->excelWorkbook = $PHPExcelFile;
         if($this->excelWorkbook){
-            //TODO: Must process all sheets
-            $this->excelWorksheet = $this->excelWorkbook->getSheet(0);          //for now, just processing the first sheet
+            //TODO: PRBO - Must process all sheets
+            $this->_excelWorksheet = $this->excelWorkbook->getSheet(0);          //for now, just processing the first sheet
 
-            $this->_ryExcelWorksheet = $this->excelWorksheet->toArray();
+            $this->_ryExcelWorksheet = $this->_excelWorksheet->toArray();
 
         }
     }
@@ -56,10 +54,13 @@ class excelWorkbook {
      * 
      * @return Returns the index of the row that appears to conatin the column headings
      */
-    public function findColumnIndex(){                                          //right now, just the first worksheet. it will have to eventually cycle throw all sheets
+    public function findColumnHeadingIndex(){                                          //right now, just the first worksheet. it will have to eventually cycle throw all sheets
+        //TODO: PRBO - What is the best way to maintain the state of the column index between HTTP requests?
+        //NOTES: Session var? This can be overrideen by the JSON object that is passed if the user changed is
+        
         //find the first row that has all consecutive cells
         $ryDataFilledCellCounts = array();
-        $columnIndex = NULL;
+        $columnHeadingIndex = NULL;
         if($this->_ryExcelWorksheet){
             foreach($this->_ryExcelWorksheet as $row){                          //go through each row
                 $dataFilledCellCount = 0;
@@ -84,15 +85,20 @@ class excelWorkbook {
             //now find the first occurance of the highest count
             $i = 1;
             foreach ($ryDataFilledCellCounts as $count){
-                if($columnIndex === NULL){
+                if($columnHeadingIndex === NULL){
                     if($count == $highestCount){
-                        $columnIndex = $i;
+                        $columnHeadingIndex = $i;
                     }
                 }
                 $i++;
             }
         }
-        return $columnIndex;
+        //TODO: PRBO - Create a more accurate way of verifying this is the column heading index
+        //NOTES: At this point the column heading index should be compared with the most common row length.
+        //If the count of consecutive data filled cells is 15, but the most common row length is 14,
+        //you may have found a row with an extra cell. In this case, finding the first row of 14 
+        //consecutive data filled cells is more likely the row you want.
+        return $columnHeadingIndex;
     }
     
     /**
@@ -167,7 +173,7 @@ class excelWorkbook {
      * @return array The data types for each cell as given by PHPExcel_Cell->getDataType()
      */
     private function getColumnPrimitiveDataTypes(){
-        $rowIterator = $this->excelWorksheet->getRowIterator();
+        $rowIterator = $this->_excelWorksheet->getRowIterator();
         //get the iterator one row after the column index
         for($i=1;$i<=$this->columnHeadingIndex;$i++){
             $rowIterator->next();

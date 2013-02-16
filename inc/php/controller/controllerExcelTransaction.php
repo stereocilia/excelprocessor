@@ -75,7 +75,7 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
         $excelWorksheet = $loader->load($requestData->excelFilePath);  //load the object with data from the excel file
         
         //call the method for finding the column heading, get an index back
-        $columnIndex = $excelWorksheet->findColumnIndex();
+        $columnIndex = $excelWorksheet->findColumnHeadingIndex();
         
         if($columnIndex != 0){
             //now load the file again with the new index if its not 0
