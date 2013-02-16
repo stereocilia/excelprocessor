@@ -46,9 +46,9 @@ class modelExcelTransaction {
                $reader->setReadFilter( new previewFilter($this->columnHeadingIndex, $this->columnHeadingIndex + $this->previewLength) );
             }
             $loadedPHPExcelFile = $reader->load($excelFileToRead);              //load the file into memory. this takes the longest to process
-            $objExcelWorkbook = new excelWorkbook($loadedPHPExcelFile);         //wrap the PHPExcel file in our excelWorkbook class
-            $objExcelWorkbook->columnHeadingIndex = $this->columnHeadingIndex;  //set the column heading row (index)
-            return $objExcelWorkbook;
+            $workbook = new excelWorkbook($loadedPHPExcelFile);         //wrap the PHPExcel file in our excelWorkbook class
+            $workbook->columnHeadingIndex = $this->columnHeadingIndex;  //set the column heading row (index)
+            return $workbook;
         } else {
             return new excelWorkbook();    //returning an empty excelWorksheet will produce an error when it is converted to JSON. Since the file could not be loaded, this object represents that.
         }
@@ -57,7 +57,8 @@ class modelExcelTransaction {
      * This will commit the file to a database
      * @return int Represents a status code
      */
-    public function commit(){
+    public function commit(excelWorkbook $objWorkBook){
+        //commit the given workbook
         //TODO: PRBO - stub out
         return 0; //return fail
     }

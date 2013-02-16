@@ -72,18 +72,18 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
         }
         $loader->previewLength = 10;                                             //how many rows will be previewed. default to 10
         
-        $excelWorksheet = $loader->load($requestData->excelFilePath);  //load the object with data from the excel file
+        $workbook = $loader->load($requestData->excelFilePath);  //load the object with data from the excel file
         
         //call the method for finding the column heading, get an index back
-        $columnIndex = $excelWorksheet->findColumnHeadingIndex();
+        $columnIndex = $workbook->findColumnHeadingIndex();
         
         if($columnIndex != 0){
             //now load the file again with the new index if its not 0
             $loader->columnHeadingIndex = $columnIndex;
-            $excelWorksheet = $loader->load($requestData->excelFilePath); 
+            $workbook = $loader->load($requestData->excelFilePath); 
         }
         
-        return $excelWorksheet->toJSON();             //send back the resulting object as JSON
+        return $workbook->toJSON();             //send back the resulting object as JSON
     }
 }
 
@@ -97,7 +97,16 @@ class handleCommitExcelRequest implements IHandleRequestStrategy{
      * @return string
      */
     public function handleRequest($requestData) {
-        return '{"responseStatus":"error"}';
+        $loader = new modelExcelTransaction();
+        $workbook = $loader->load($requestData->excelFilePath);
+        
+        //make a new excelWorkbook
+        //make a changes needed
+        //commit the changes
+        if($loader->commit($workbook)===0){                                     //just for the stub out, this will change
+           return '{"responseStatus":"error"}'; 
+        }
+        
     }
 }
 
