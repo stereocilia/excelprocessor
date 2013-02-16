@@ -1,7 +1,7 @@
 <?php
 /* All AJAX calls are made to this page, but handled by the controller. This is the equivelant of a bootstrap page. */
 
-define(  ROOT_PATH, realpath( dirname(__FILE__) )  );//this is used during development so I can move files around without worrying too much about the path
+define(  "ROOT_PATH", realpath( dirname(__FILE__) )  );//this is used during development so I can move files around without worrying too much about the path
 
 require_once 'inc\php\controller\controllerExcelTransaction.php';               //controller class
 

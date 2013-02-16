@@ -28,12 +28,17 @@
     {
         // accepts HHHH:MM:SS, e.g. 23:59:30 or 12:30 or 120:17
         $timePatternA = "/^(\-)?[0-9]{1,4}:[0-9]{1,2}(:[0-9]{1,2})?$/";
-        $timePatternB = "/^[0-9]{1,2}[AM]|[PM]";
-        if ( ! preg_match($timePatternA, $time) )//&& ! preg_match($timePatternB, $time) )
-        {
-            return false;
+        $timePatternB = "/^[0-9]{1,2}[AM]|[PM]$/";
+        $isStandardTime = TRUE;
+        $isSimpleTime = TRUE;
+        if ( ! preg_match($timePatternA, $time) ){
+            $isStandardTime = false;
         }
 
-        return true;
+        if( !preg_match($timePatternB, $time) ){
+            $isSimpleTime = FALSE;
+        }
+
+        return ($isStandardTime || $isSimpleTime);
     }
 ?>

@@ -1,4 +1,4 @@
-<?php define( IS_DEV, TRUE ); //true means this is in development ?>
+<?php define( "IS_DEV", TRUE ); //true means this is in development ?>
 <?php
     $scriptSuffix = ""; //added to the name of the javascript file
     if(IS_DEV){

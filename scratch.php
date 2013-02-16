@@ -5,11 +5,12 @@
 //define(  ROOT_PATH, realpath( dirname(__FILE__) )  );
 
 require_once 'inc\php\common.php';
-    $timeFixed = str_replace('-', '/', "05-29-08");
-    echo $timeFixed;
+    //$timeFixed = str_replace('-', '/', "05-29-08");
+    //echo $timeFixed;
+    //echo "<br>";
+    //echo strtotime($timeFixed); //change dashes to slashes?
+    echo is_date("X");
     echo "<br>";
-    echo strtotime($timeFixed); //change dashes to slashes?
-    echo is_date($timeFixed);
     
     
         $timePatternB = "/^[0-9]{1,2}[AM]|[PM]$/";

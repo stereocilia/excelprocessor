@@ -138,7 +138,12 @@ class excelWorkbook {
         foreach($xlSheet as $cell){                                             //get the type for each cell
             switch($this->primitiveTypes[$i]){                                  //using a switch statement here because all values are known
                 case "s" :
-                    $cellTypes[] = "string";
+                    if(is_time($cell)){
+                       $cellTypes[] = "time";
+                    } else {
+                       $cellTypes[] = "string"; 
+                    }
+                    
                     break;
                 case "b" :
                     $cellTypes[] = "boolean";
@@ -154,9 +159,14 @@ class excelWorkbook {
         }
         return $cellTypes;
     }
-    private function handleNumericType($number){
-        $isTime = is_time($number);
-        $isDate = is_date( str_replace('-', '/', $number) );                    //the '-' character seems to not register with strtotime, so replacing it with '/' character
+    /**
+     * Handles types that are date, 
+     * @param type $number
+     * @return string
+     */
+    private function handleNumericType($value){
+        $isTime = is_time($value);
+        $isDate = is_date( str_replace('-', '/', $value) );                    //the '-' character seems to not register with strtotime, so replacing it with '/' character
         if( $isTime ){
             return "time";
         }
@@ -164,7 +174,12 @@ class excelWorkbook {
             return "date";
         } 
         if(!$isTime && !$isDate) {
-            return "number";
+            if( is_numeric($value) ){
+              return "number";  
+            } else {
+                return "string";
+            }
+            
         }
     }
     /**

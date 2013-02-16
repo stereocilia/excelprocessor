@@ -13,7 +13,7 @@
     <!-- SCRIPTS -->
     <?php include('inc/php/jsInclude.php');                                     //includes all the javascript files needed ?>
     <script type="text/javascript">
-        var excelFilePath = "userdata/data.xlsx";                               //for debug only. AJAX file upload should assign this value otherwise.
+        var excelFilePath = "userdata/Idaho_MarshBird_2008.xlsx";                               //for debug only. AJAX file upload should assign this value otherwise.
         //The message displayed while Excel file is being
         var loadingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
         
@@ -29,6 +29,13 @@
                 var excelData = data.excelData;                                 //the returned Excel file as a JSON object
                 var htmlOut = "";
                 htmlOut += "<table>";
+                htmlOut += "<tr>";
+                for (var dataTypeCell in data.dataTypes){
+                    htmlOut += "<td>";
+                    htmlOut += data.dataTypes[dataTypeCell];                        //show the cell contents
+                    htmlOut += "</td>";
+                }
+                htmlOut += "</tr>";
                 for(var row in excelData){                                      //for each row of data
                     htmlOut += "<tr>";
                     for(var cell in excelData[row]){                            //for each cell in the row
@@ -39,9 +46,6 @@
                     htmlOut += "</tr>";
                 }
                 htmlOut += "</table>";
-                htmlOut += "<div>";
-                htmlOut += data.dataTypes;                                      //show the assumed data types of each column (this is really ugly right now)
-                htmlOut += "</div>";
                 $('#results').html(htmlOut);
             } else {
                 $('#results').html("Error processing your document");           //show an error message
