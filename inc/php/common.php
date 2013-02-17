@@ -24,7 +24,7 @@
       return FALSE; 
     }
     
-    function is_time($time)     //TODO: PRBO - This won't find a time like 1PM
+    function is_time($time)
     {
         // accepts HHHH:MM:SS, e.g. 23:59:30 or 12:30 or 120:17
         $timePatternA = "/^(\-)?[0-9]{1,4}:[0-9]{1,2}(:[0-9]{1,2})?$/";
