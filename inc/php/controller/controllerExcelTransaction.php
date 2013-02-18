@@ -70,18 +70,23 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
                 $loader->isPreview = FALSE;
             }
         }
-        $loader->previewLength = 5;                                             //how many rows will be previewed. default to 10
+        $loader->previewLength = 20;                                             //how many rows will be previewed. default to 10
         
         $workbook = $loader->load($requestData->excelFilePath);  //load the object with data from the excel file
         
+        //TODO: This has to find the columnHeadingIndex for each sheet
         //call the method for finding the column heading, get an index back
-        $columnIndex = $workbook->findColumnHeadingIndex();
+        //for($i=0;$i<$workbook->sheetCount;$i++){
+        //    $columnHeadingIndecies[] = $workbook->findColumnHeadingIndex($i);
+        //}
         
-        if($columnIndex != 0){
+        
+        //NOTE: Loading the file again is not going to work with multiple sheets.
+        //if($columnHeadingIndecies[0] != 0){
             //now load the file again with the new index if its not 0
-            $loader->columnHeadingIndex = $columnIndex;
-            $workbook = $loader->load($requestData->excelFilePath); 
-        }
+        //    $loader->columnHeadingIndex = $columnHeadingIndecies[0];
+        //    $workbook = $loader->load($requestData->excelFilePath); 
+        //}
         
         return $workbook->toJSON();             //send back the resulting object as JSON
     }

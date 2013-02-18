@@ -46,67 +46,89 @@ class excelWorkbook {
      */
     public $columnHeadingIndex = 1;
     
+    public $columnHeadingIndecies = array();
+    
+    //TODO: This must be made private and accessable through getter, it's read only
+    public $sheetCount = 0;
+    
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
         $this->excelWorkbook = $PHPExcelFile;
         if($this->excelWorkbook){
-            //TODO: PRBO - Must process all sheets
-            $this->_excelWorksheets = $this->excelWorkbook->getAllSheets();
             
             $this->removeHiddenColumns();
+            
+            $this->sheetCount = $this->excelWorkbook->getSheetCount();
+             //TODO: PRBO - Must process all sheets
+            $this->_excelWorksheets = $this->excelWorkbook->getAllSheets();    
             
             foreach($this->excelWorkbook->getWorksheetIterator() as $sheet){
                 $this->_ryExcelWorksheets[] = $sheet->toArray();
             }
             
-            $this->_excelWorksheet = $this->_excelWorksheets[0];//$this->excelWorkbook->getSheet(0);          //for now, just processing the first sheet
+            $this->findColumnHeadingIndecies();
+            
+            $this->_excelWorksheet = $this->_excelWorksheets[0];                //remove as soon as your code works without it 
 
-            $this->_ryExcelWorksheet = $this->_ryExcelWorksheets[0];//$this->_excelWorksheet->toArray();
+            $this->_ryExcelWorksheet = $this->_ryExcelWorksheets[0];            //remove as soon as your code works without it
 
         }
     }
+    public function findColumnHeadingIndecies(){
+            for($i=0;$i<$this->sheetCount;$i++){
+                $ci = $this->findColumnHeadingIndex($i);
+                $this->columnHeadingIndecies[] = $ci;
+            }        
+    }
     
+    //TODO: Pass a sheet instead of the index?
     /**
      * Tries to find the row containing the names for all the columns
      * 
      * @return Returns the index of the row that appears to conatin the column headings
      */
-    public function findColumnHeadingIndex(){                                          //right now, just the first worksheet. it will have to eventually cycle throw all sheets
-        //TODO: PRBO - What is the best way to maintain the state of the column index between HTTP requests?
-        //NOTES: Session var? This can be overrideen by the JSON object that is passed if the user changed is
+    public function findColumnHeadingIndex($sheetIndex = 0){                                          //right now, just the first worksheet. it will have to eventually cycle throw all sheets
         
-        //find the first row that has all consecutive cells
-        $ryDataFilledCellCounts = array();
         $columnHeadingIndex = NULL;
-        if($this->_ryExcelWorksheet){
-            foreach($this->_ryExcelWorksheet as $row){                          //go through each row
-                $dataFilledCellCount = 0;
-                $isConsecutive = TRUE;            
-                foreach ($row as $cell){                                        //go through each cell
-                   if(  ( empty($cell) || $cell == "null" ) && $isConsecutive ){//if the cell is considered empty AND the cells are still considered consecutive
-                       $isConsecutive = FALSE;                                  //then we are done doing a cell count
-                   } elseif($isConsecutive) {                                   //if the cells are still consecutive
-                       $dataFilledCellCount++;                                  //if the cell is not empty, count it
-                   }
+        //make sure the index is withing the range of the sheet count
+        if($sheetIndex < $this->sheetCount){
+
+            //TODO: PRBO - What is the best way to maintain the state of the column index between HTTP requests?
+            //NOTES: Session var? This can be overrideen by the JSON object that is passed if the user changed is
+
+            //find the first row that has all consecutive cells
+            $ryDataFilledCellCounts = array();
+            
+            if($this->_ryExcelWorksheets[$sheetIndex]){
+                foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                          //go through each row
+                    $dataFilledCellCount = 0;
+                    $isConsecutive = TRUE;            
+                    foreach ($row as $cell){                                        //go through each cell
+                       if(  ( empty($cell) || $cell == "null" ) && $isConsecutive ){//if the cell is considered empty AND the cells are still considered consecutive
+                           $isConsecutive = FALSE;                                  //then we are done doing a cell count
+                       } elseif($isConsecutive) {                                   //if the cells are still consecutive
+                           $dataFilledCellCount++;                                  //if the cell is not empty, count it
+                       }
+                    }
+                    $ryDataFilledCellCounts[] = $dataFilledCellCount;
                 }
-                $ryDataFilledCellCounts[] = $dataFilledCellCount;
-            }
-            //find which row had the high count of consecutive data filled cells
-            //return the index of that row
-            $highestCount = 0;
-            foreach($ryDataFilledCellCounts as $count){
-                if($count>$highestCount){
-                    $highestCount = $count;
-                }
-            }
-            //now find the first occurance of the highest count
-            $i = 1;
-            foreach ($ryDataFilledCellCounts as $count){
-                if($columnHeadingIndex === NULL){
-                    if($count == $highestCount){
-                        $columnHeadingIndex = $i;
+                //find which row had the high count of consecutive data filled cells
+                //return the index of that row
+                $highestCount = 0;
+                foreach($ryDataFilledCellCounts as $count){
+                    if($count>$highestCount){
+                        $highestCount = $count;
                     }
                 }
-                $i++;
+                //now find the first occurance of the highest count
+                $i = 1;
+                foreach ($ryDataFilledCellCounts as $count){
+                    if($columnHeadingIndex === NULL){
+                        if($count == $highestCount){
+                            $columnHeadingIndex = $i;
+                        }
+                    }
+                    $i++;
+                }
             }
         }
         //TODO: PRBO - Create a more accurate way of verifying this is the column heading index
@@ -122,19 +144,26 @@ class excelWorkbook {
      * @return string JSON string that represent the excelWorkbook of this object
      */
     public function toJSON(){
+        //TODO: output the name of the sheets
         if($this->excelWorkbook){
             
-            $this->_ryExcelWorksheet = $this->removeNullRows($this->_ryExcelWorksheet);
-            
-            $ryReturn = array();
-            
-            $ryReturn["dataTypes"] = $this->getColumnDataTypes();
-            
-            $ryReturn["excelData"] = $this->_ryExcelWorksheet;                       //this will eventually be an array of sheets
-            
-            $ryReturn["responseStatus"] = "success";
+            $ryJSONReturn = array();
+            for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
 
-            return json_encode($ryReturn);
+               $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);    //remove null rows
+               //TODO: PRBO - set the first element in the array to the column index for this sheet
+               $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndexOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->columnHeadingIndecies[$i]);
+               
+               //TODO: PRBO - FIXME When the AJAX call back is received by the landing page, it cannot decode the JSON object. This is the line of code that is screwing it up. Find out what that is all about. I think it has to do with one of the arrays being empty.
+               //$ryJSONReturn["dataTypes"][$i] = $this->getColumnDataTypes($i);  //get data types
+               
+               $ryJSONReturn["excelWorksheets"][$i]["title"] = $this->_excelWorksheets[$i]->getTitle(); 
+               $ryJSONReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];//put the worksheet in the array that will be encoded
+            }
+            
+            $ryJSONReturn["responseStatus"] = "success";
+
+            return json_encode($ryJSONReturn);
             
         } else {
             
@@ -143,16 +172,25 @@ class excelWorkbook {
         }
     }
     
+    public function setColumnHeadingIndexOfArrayWorksheet(array $worksheet, $columnHeadingIndex){
+        $ryReturn = array();
+        for($i=($columnHeadingIndex-1);$i<count($worksheet);$i++){
+            $ryReturn[] = $worksheet[$i];
+        }
+        return $ryReturn;
+    }
+    
    /**
      * Gets  data types of all columns for the current excelSheet of $this object
      */
-    private function getColumnDataTypes(){
-        $this->primitiveTypes = $this->getColumnPrimitiveDataTypes();           //get what the PHPExcel library says the data types are
+    private function getColumnDataTypes($sheetIndex = 0){
+        $primitiveTypes = $this->getColumnPrimitiveDataTypes($sheetIndex);      //get what the PHPExcel library says the data types are
         $cellTypes = array();
         $i = 0;
-        $xlSheet = $this->_ryExcelWorksheet[1];
-        foreach($xlSheet as $cell){                                             //get the type for each cell
-            switch($this->primitiveTypes[$i]){                                  //using a switch statement here because all values are known
+        $sheet = $this->_ryExcelWorksheets[$sheetIndex];                        //get the sheet asked for
+        $row = $sheet[ $this->columnHeadingIndecies[$sheetIndex]+1 ];           //use the row after the columnHeadingIndex for this sheet
+        foreach($row as $cell){                                                 //get the type for each cell
+            switch($primitiveTypes[$i]){                                        //using a switch statement here because all values are known
                 case "s" :
                     if(is_time($cell)){
                        $cellTypes[] = "time";
@@ -198,15 +236,17 @@ class excelWorkbook {
             
         }
     }
+    
+    //NOTE: Should I really rely on the data type that Excel gives me? Wouldn't it be more accurate to find the data types on my own?
     /**
      * Gets primative data types of all columns for the current excelSheet of $this object
      * 
      * @return array The data types for each cell as given by PHPExcel_Cell->getDataType()
      */
-    private function getColumnPrimitiveDataTypes(){
-        $rowIterator = $this->_excelWorksheet->getRowIterator();
+    private function getColumnPrimitiveDataTypes($sheetIndex = 0){
+        $rowIterator = $this->_excelWorksheets[$sheetIndex]->getRowIterator();
         //get the iterator one row after the column index
-        for($i=1;$i<=$this->columnHeadingIndex;$i++){
+        for($i=1;$i<=$this->columnHeadingIndecies[$sheetIndex];$i++){
             $rowIterator->next();
         }
         //get the generic data types for each cell and store them in an array
@@ -246,8 +286,8 @@ class excelWorkbook {
     }
     
     private function removeHiddenColumns(){
-        //TODO: If the last column is removed, data in the last row reamins for some reason
-        foreach($this->_excelWorksheets as $sheet){
+        //TODO: PRBO - If the last column is removed, data in the last row reamins for some reason
+        foreach($this->excelWorkbook->getAllSheets() as $sheet){
             foreach($sheet->getColumnDimensions() as $dimension){
                 if( !$dimension->getVisible() ){
                     $sheet->removeColumn( $dimension->getColumnIndex() );
