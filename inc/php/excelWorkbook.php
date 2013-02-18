@@ -18,11 +18,19 @@ class excelWorkbook {
     private $_excelWorksheet = NULL;
     
     /**
-     * Represents data in worksheet as an array
-     * 
+     * Array of PHPExcel_Worksheet
      * @var array 
      */
+    private $_excelWorksheets = NULL;
+    
+    /**
+     * Represents data in worksheet as an array
+     * 
+     * @var PHPExcel_Worksheet[] 
+     */
     private $_ryExcelWorksheet = NULL;
+    
+    private $_ryExcelWorksheets = array();
     
     /**
      * PHPExcel file returned from the load function of a PHPExcel_Reader class
@@ -42,9 +50,17 @@ class excelWorkbook {
         $this->excelWorkbook = $PHPExcelFile;
         if($this->excelWorkbook){
             //TODO: PRBO - Must process all sheets
-            $this->_excelWorksheet = $this->excelWorkbook->getSheet(0);          //for now, just processing the first sheet
+            $this->_excelWorksheets = $this->excelWorkbook->getAllSheets();
+            
+            $this->removeHiddenColumns();
+            
+            foreach($this->excelWorkbook->getWorksheetIterator() as $sheet){
+                $this->_ryExcelWorksheets[] = $sheet->toArray();
+            }
+            
+            $this->_excelWorksheet = $this->_excelWorksheets[0];//$this->excelWorkbook->getSheet(0);          //for now, just processing the first sheet
 
-            $this->_ryExcelWorksheet = $this->_excelWorksheet->toArray();
+            $this->_ryExcelWorksheet = $this->_ryExcelWorksheets[0];//$this->_excelWorksheet->toArray();
 
         }
     }
@@ -108,7 +124,7 @@ class excelWorkbook {
     public function toJSON(){
         if($this->excelWorkbook){
             
-            $this->removeNullRows();
+            $this->_ryExcelWorksheet = $this->removeNullRows($this->_ryExcelWorksheet);
             
             $ryReturn = array();
             
@@ -205,26 +221,38 @@ class excelWorkbook {
     /**
      * Removes rows that have all cells set to null in the ryExcelSheet private member
      */
-    public function removeNullRows($startIndex = 0){
-        if($this->_ryExcelWorksheet){
+    public function removeNullRows($ryExcelWorksheet){
+        $startIndex = 0;
+        if($ryExcelWorksheet){
             $ryExcelSheetTemp = array();
-            for($i=$startIndex;$i<count($this->_ryExcelWorksheet);$i++){
-                if($this->_ryExcelWorksheet[$i][0] == null){  //if the first cell is null, check each each cell
+            for($i=$startIndex;$i<count($ryExcelWorksheet);$i++){
+                if($ryExcelWorksheet[$i][0] == null){  //if the first cell is null, check each each cell
                     $isAllNull = TRUE;  //assume all of the cells are null unless one is found with data
                     
-                    foreach($this->_ryExcelWorksheet[$i] as $cell){       //now find a cell that does not have null
+                    foreach($ryExcelWorksheet[$i] as $cell){       //now find a cell that does not have null
                         if($cell != null){
                             $isAllNull = FALSE;
                         }
                     }
                     if(!$isAllNull){ //this row shall be kept because a cell was found that was not null
-                        $ryExcelSheetTemp[] = $this->_ryExcelWorksheet[$i];
+                        $ryExcelSheetTemp[] = $ryExcelWorksheet[$i];
                     }
                 } else {
-                   $ryExcelSheetTemp[] = $this->_ryExcelWorksheet[$i];  //this row should be kept because it the first cell was not null
+                   $ryExcelSheetTemp[] = $ryExcelWorksheet[$i];  //this row should be kept because it the first cell was not null
                 }
             }
-            $this->_ryExcelWorksheet = $ryExcelSheetTemp;
+            return $ryExcelSheetTemp;
+        }
+    }
+    
+    private function removeHiddenColumns(){
+        //TODO: If the last column is removed, data in the last row reamins for some reason
+        foreach($this->_excelWorksheets as $sheet){
+            foreach($sheet->getColumnDimensions() as $dimension){
+                if( !$dimension->getVisible() ){
+                    $sheet->removeColumn( $dimension->getColumnIndex() );
+                }
+            }
         }
     }
     /**
