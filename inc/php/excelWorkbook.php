@@ -27,18 +27,18 @@ class excelWorkbook {
      */
     public $excelWorkbook = NULL;
     
-    public $columnHeadingIndecies = array();
+    private $columnHeadingIndices = array();
     
-    public $columnHeadingIndeciesLength = array();
+    private $columnHeadingIndicesLength = array();
+    
+    private $lastDatasetRows = array();
     
     //TODO: This must be made private and accessable through getter, it's read only. For now I'll leave it so it shows up on code hinting
-    public $sheetCount = 0;
+    private $sheetCount = 0;
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
         $this->excelWorkbook = $PHPExcelFile;
         if($this->excelWorkbook){
-            
-            //TODO: PRBO - This really has to get cleaned up. It's like this for now because I'm working on it
             
             $this->removeHiddenColumns();
             
@@ -50,15 +50,16 @@ class excelWorkbook {
                 $this->_ryExcelWorksheets[] = $sheet->toArray();
             }
             
-            $this->findColumnHeadingIndecies();
+            $this->findColumnHeadingIndices();
         }
     }
-    public function findColumnHeadingIndecies(){
+    public function findColumnHeadingIndices(){
+            //must already have sheet count for this to work
             for($i=0;$i<$this->sheetCount;$i++){
-                $this->columnHeadingIndecies[] = $this->findColumnHeadingIndex($i);
+                $this->columnHeadingIndices[] = $this->findColumnHeadingIndex($i);
                 //TODO: They must only be the length of consecutive data filled cells.
-                $columnHeadingRow = $this->_ryExcelWorksheets[$i][ ($this->columnHeadingIndecies[$i]-1) ];  //column heading row of the current sheet, as an array of cells
-                $this->columnHeadingIndeciesLength[] = $this->consecutiveDataCellCount($columnHeadingRow);  //the count of consecutively filled cells of data
+                $columnHeadingRow = $this->_ryExcelWorksheets[$i][ ($this->columnHeadingIndices[$i]-1) ];  //column heading row of the current sheet, as an array of cells
+                $this->columnHeadingIndicesLength[] = $this->consecutiveDataCellCount($columnHeadingRow);  //the count of consecutively filled cells of data
             }
     }
     /**
@@ -83,12 +84,12 @@ class excelWorkbook {
      * @return Returns the index of the row that appears to conatin the column headings
      */
     public function findColumnHeadingIndex($sheetIndex = 0){                                          //right now, just the first worksheet. it will have to eventually cycle throw all sheets
-        
+        //must already have an array of excel worksheets for this to work
         $columnHeadingIndex = NULL;
         //make sure the index is withing the range of the sheet count
         if($sheetIndex < $this->sheetCount){
 
-            //TODO: PRBO - What is the best way to maintain the state of the column index between HTTP requests?
+            //TODO: PRBO - What is the best way to maintain the state of the column index between HTTP requests? Or should it just redectect every time?
             //NOTES: Session var? This can be overrideen by the JSON object that is passed if the user changed is
 
             //find the first row that has all consecutive cells
@@ -126,49 +127,76 @@ class excelWorkbook {
         return $columnHeadingIndex;
     }
     
-    public function toArray(){
-        //TODO: PRBO - Maybe use a better name for this. Its not just an array because many actions have been performed on it.
+    private function findLastDatasetRows(){
+        //find the last dataset row of each sheet
+        for($i=0;$i<$this->sheetCount;$i++){
+            $this->lastDatasetRows[] = $this->findLastDatasetRow($i);
+        }
+       
     }
     
-    /**
-     * 
-     * @return string JSON string that represent the excelWorkbook of this object
-     */
-    public function toJSON(){
+    private function findLastDatasetRow($sheetIndex = 0){
+        //assumes that the first row is the column heading row. setColumnHeadinIndexOfArrayWorksheet() should be called first
+        //find the first row after the column heading row where the first cell is empty. this will be the last row of the dataset
+        $lastDatasetRow = NULL;
+        if($sheetIndex<$this->sheetCount){                                      //given index must be in range
+            $sheet = $this->_ryExcelWorksheets[$sheetIndex];
+            foreach($sheet as $index => $row){
+                if(  ( empty($row[0]) || $row[0] == "null" ) && $lastDatasetRow === NULL ){            //if the first cell is empty or null and last row has yet been found
+                    $lastDatasetRow = ($index - 1);                                   //set the row before this one the index
+                }
+            }
+        }
+        if($lastDatasetRow === NULL){   //set to last row if null
+            $lastDatasetRow = (  count( $this->_ryExcelWorksheets[$sheetIndex] ) - 1  );
+        }
+        return $lastDatasetRow;
+    }
+    
+    public function toArray(){
+        //NOTE: The array MUST be able to become a valid JSON object... this means no empty arrays!
+        $ryReturn = array();
         if($this->excelWorkbook){
-
-            $ryJSONReturn = array();
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
-
+               //TODO: PRBO - Should the setColumnHeading... and setLastDataset... be called together in a function since the both reorganize the data?
+               $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndexOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]);//make the first row the column heading row
+               //TODO: Why doesn't this work if called in the constructor function?
+               $this->findLastDatasetRows();    //does this need to be called here or somewhere else?
+               $this->_ryExcelWorksheets[$i] = $this->setLastDatasetRowOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->lastDatasetRows[$i]);
                
-               $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndexOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->columnHeadingIndecies[$i]);
+               $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
                $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
-               $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndeciesLength[$i]);   //removes data longer than the column heading length
                
-               $ryJSONReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
-               $ryJSONReturn["excelWorksheets"][$i]["title"] = $this->_excelWorksheets[$i]->getTitle();     //get sheet titles
-               $ryJSONReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
+               
+               $ryReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
+               $ryReturn["excelWorksheets"][$i]["title"] = $this->_excelWorksheets[$i]->getTitle();     //get sheet titles
+               $ryReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
             }
             
-            $ryJSONReturn["responseStatus"] = "success";                                                    //say everything went well
-
-            return json_encode($ryJSONReturn);
+            $ryReturn["responseStatus"] = "success";                                                    //say everything went well
             
         } else {
-            $ryJSONError = array();
-            $ryJSONError["responseStatus"] = "error";
-            $ryJSONError["errorMessage"] = "The file could not be found";
-            return json_encode($ryJSONError);                                   //if there is no excel file, and error must be reported
-            
+            $ryReturn["responseStatus"] = "error";
+            $ryReturn["errorMessage"] = "The file could not be found";
         }
+        return $ryReturn;
     }
     
-    public function setColumnHeadingIndexOfArrayWorksheet($worksheet, $columnHeadingIndex){
+    private function setColumnHeadingIndexOfArrayWorksheet($worksheet, $columnHeadingIndex){
         $ryReturn = array();
         for($i=($columnHeadingIndex-1);$i<count($worksheet);$i++){
             $ryReturn[] = $worksheet[$i];
         }
         return $ryReturn;
+    }
+    
+    private function setLastDatasetRowOfArrayWorksheet($worksheet, $lastDatasetRow){
+        //rebuild array backward
+        $ryReturn = array();
+        for($i=( $lastDatasetRow );$i>=0;$i--){
+            $ryReturn[] = $worksheet[$i];
+        }
+        return array_reverse($ryReturn);
     }
     
    /**
@@ -179,7 +207,7 @@ class excelWorkbook {
         $cellTypes = array();
         $i = 0;
         $sheet = $this->_ryExcelWorksheets[$sheetIndex];                        //get the sheet asked for
-        $row = $sheet[ $this->columnHeadingIndecies[$sheetIndex] ];           //use the row after the columnHeadingIndex for this sheet
+        $row = $sheet[ $this->columnHeadingIndices[$sheetIndex] ];           //use the row after the columnHeadingIndex for this sheet
         foreach($row as $cell){                                                 //get the type for each cell
             switch($primitiveTypes[$i]){                                        //using a switch statement here because all values are known
                 case "s" :
@@ -188,7 +216,6 @@ class excelWorkbook {
                     } else {
                        $cellTypes[] = "string"; 
                     }
-                    
                     break;
                 case "b" :
                     $cellTypes[] = "boolean";
@@ -237,7 +264,7 @@ class excelWorkbook {
     private function getColumnPrimitiveDataTypes($sheetIndex = 0){
         $rowIterator = $this->_excelWorksheets[$sheetIndex]->getRowIterator();
         //get the iterator one row after the column index
-        for($i=1;$i<=$this->columnHeadingIndecies[$sheetIndex];$i++){
+        for($i=1;$i<=$this->columnHeadingIndices[$sheetIndex];$i++){
             $rowIterator->next();
         }
         //get the generic data types for each cell and store them in an array
@@ -277,7 +304,7 @@ class excelWorkbook {
     }
     
     private function removeHiddenColumns(){
-        //TODO: PRBO - If the last column is removed, data in the last row reamins for some reason
+        //TODO: PRBO - If the last column is removed, data in the last row remains for some reason
         foreach($this->excelWorkbook->getAllSheets() as $sheet){
             foreach($sheet->getColumnDimensions() as $dimension){
                 if( !$dimension->getVisible() ){
@@ -308,6 +335,7 @@ class excelWorkbook {
      * Finds the most occuring length of a row
      */
     private function mostCommonRowLength(){
+        //TODO: PRBO - mostCommonRowLength - Create the logic for this function
         //get the cell count for each row
         //store in array
         //create a new array for the counts

@@ -27,15 +27,14 @@
                     var htmlOut = "";
                     for(var i=0;i<data.excelWorksheets.length;i++){
                         var excelWorksheet = data.excelWorksheets[i];                                 //the returned Excel file as a JSON object
-                        htmlOut += "<h3>";
+                        htmlOut += "<h3 title='Sheet Name'>";
                         htmlOut += excelWorksheet.title;
                         htmlOut += "</h3>";
                         
                         htmlOut += "<table>";
-                        
                         htmlOut += "<tr>";
                         for (var columnType in excelWorksheet.columnTypes){
-                            htmlOut += "<td>";
+                            htmlOut += "<td title='Data Type'>";
                             htmlOut += excelWorksheet.columnTypes[columnType];                        //show the cell contents
                             htmlOut += "</td>";
                         }
@@ -43,7 +42,7 @@
                         for(var row in excelWorksheet.sheetData){                                      //for each row of data
                             htmlOut += "<tr>";
                             for(var cell in excelWorksheet.sheetData[row]){                            //for each cell in the row
-                                htmlOut += "<td>";
+                                htmlOut += "<td title='Cell Data'>";
                                 htmlOut += excelWorksheet.sheetData[row][cell];                        //show the cell contents
                                 htmlOut += "</td>"; 
                             }
@@ -57,5 +56,6 @@
                 }
             }
         </script>
+        <!--TODO: PRBO - Should the interface enable selection of sheets that will be included / not included in the final commit? -->
     </body>
 </html>

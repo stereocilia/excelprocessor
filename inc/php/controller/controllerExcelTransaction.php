@@ -63,32 +63,18 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
      */
     public function handleRequest($requestData) {
         $loader = new modelExcelTransaction();
-        //if the preview option was set in the JSON object passed, limit the amount of
-        //returned rows
-        if( isset($requestData->showPreview) ){
+        
+        if( isset($requestData->showPreview) ){                                 //if the preview option was set in the JSON object passed, limit the amount of returned rows
             if ($requestData->showPreview == FALSE){
                 $loader->isPreview = FALSE;
             }
         }
-        $loader->previewLength = 20;                                             //how many rows will be previewed. default to 10
         
-        $workbook = $loader->load($requestData->excelFilePath);  //load the object with data from the excel file
+        $loader->previewLength = 100;                                             //how many rows will be previewed. default to 10
         
-        //TODO: This has to find the columnHeadingIndex for each sheet
-        //call the method for finding the column heading, get an index back
-        //for($i=0;$i<$workbook->sheetCount;$i++){
-        //    $columnHeadingIndecies[] = $workbook->findColumnHeadingIndex($i);
-        //}
+        $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
         
-        
-        //NOTE: Loading the file again is not going to work with multiple sheets.
-        //if($columnHeadingIndecies[0] != 0){
-            //now load the file again with the new index if its not 0
-        //    $loader->columnHeadingIndex = $columnHeadingIndecies[0];
-        //    $workbook = $loader->load($requestData->excelFilePath); 
-        //}
-        
-        return $workbook->toJSON();             //send back the resulting object as JSON
+        return json_encode( $workbook->toArray() );                             //send back the resulting object as JSON
     }
 }
 
