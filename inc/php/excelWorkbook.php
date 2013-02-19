@@ -9,27 +9,15 @@ require_once 'common.php';
  */
 class excelWorkbook {
     /**
-     * The first PHPExcel_Worksheet
-     * 
-     * This will have to be changed when all worksheets are processed
-     * 
-     * @var PHPExcel_Worksheet 
-     */
-    private $_excelWorksheet = NULL;
-    
-    /**
      * Array of PHPExcel_Worksheet
      * @var array 
      */
     private $_excelWorksheets = NULL;
     
     /**
-     * Represents data in worksheet as an array
-     * 
-     * @var PHPExcel_Worksheet[] 
+     * Array of Excel Worksheets represented as arrays
+     * @var type 
      */
-    private $_ryExcelWorksheet = NULL;
-    
     private $_ryExcelWorksheets = array();
     
     /**
@@ -39,16 +27,11 @@ class excelWorkbook {
      */
     public $excelWorkbook = NULL;
     
-    /**
-     * Index of the row that is assumed to contain the column headings
-     * 
-     * @var integer 
-     */
-    public $columnHeadingIndex = 1;
-    
     public $columnHeadingIndecies = array();
     
-    //TODO: This must be made private and accessable through getter, it's read only
+    public $columnHeadingIndeciesLength = array();
+    
+    //TODO: This must be made private and accessable through getter, it's read only. For now I'll leave it so it shows up on code hinting
     public $sheetCount = 0;
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
@@ -60,29 +43,40 @@ class excelWorkbook {
             $this->removeHiddenColumns();
             
             $this->sheetCount = $this->excelWorkbook->getSheetCount();
-             //TODO: PRBO - Must process all sheets
+
             $this->_excelWorksheets = $this->excelWorkbook->getAllSheets();    
             
-            foreach($this->excelWorkbook->getWorksheetIterator() as $sheet){
+            foreach($this->excelWorkbook->getWorksheetIterator() as $sheet){    //turn all sheets into arrays
                 $this->_ryExcelWorksheets[] = $sheet->toArray();
             }
             
             $this->findColumnHeadingIndecies();
-            
-            $this->_excelWorksheet = $this->_excelWorksheets[0];                //remove as soon as your code works without it 
-
-            $this->_ryExcelWorksheet = $this->_ryExcelWorksheets[0];            //remove as soon as your code works without it
-
         }
     }
     public function findColumnHeadingIndecies(){
             for($i=0;$i<$this->sheetCount;$i++){
-                $ci = $this->findColumnHeadingIndex($i);
-                $this->columnHeadingIndecies[] = $ci;
-            }        
+                $this->columnHeadingIndecies[] = $this->findColumnHeadingIndex($i);
+                //TODO: They must only be the length of consecutive data filled cells.
+                $columnHeadingRow = $this->_ryExcelWorksheets[$i][ ($this->columnHeadingIndecies[$i]-1) ];  //column heading row of the current sheet, as an array of cells
+                $this->columnHeadingIndeciesLength[] = $this->consecutiveDataCellCount($columnHeadingRow);  //the count of consecutively filled cells of data
+            }
     }
-    
-    //TODO: Pass a sheet instead of the index?
+    /**
+     * Finds the count of cells in a row that are consecutively filled with data (not empty or null)
+     * @param array $row
+     */
+    private function consecutiveDataCellCount($row){
+        $dataFilledCellCount = 0;
+        $isConsecutive = TRUE;            
+        foreach ($row as $cell){                                        //go through each cell
+           if(  ( empty($cell) || $cell == "null" ) && $isConsecutive ){//if the cell is considered empty AND the cells are still considered consecutive
+               $isConsecutive = FALSE;                                  //then we are done doing a cell count
+           } elseif($isConsecutive) {                                   //if the cells are still consecutive
+               $dataFilledCellCount++;                                  //if the cell is not empty, count it
+           }
+        }
+        return $dataFilledCellCount;
+    }
     /**
      * Tries to find the row containing the names for all the columns
      * 
@@ -102,16 +96,7 @@ class excelWorkbook {
             
             if($this->_ryExcelWorksheets[$sheetIndex]){
                 foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                          //go through each row
-                    $dataFilledCellCount = 0;
-                    $isConsecutive = TRUE;            
-                    foreach ($row as $cell){                                        //go through each cell
-                       if(  ( empty($cell) || $cell == "null" ) && $isConsecutive ){//if the cell is considered empty AND the cells are still considered consecutive
-                           $isConsecutive = FALSE;                                  //then we are done doing a cell count
-                       } elseif($isConsecutive) {                                   //if the cells are still consecutive
-                           $dataFilledCellCount++;                                  //if the cell is not empty, count it
-                       }
-                    }
-                    $ryDataFilledCellCounts[] = $dataFilledCellCount;
+                    $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);
                 }
                 //find which row had the high count of consecutive data filled cells
                 //return the index of that row
@@ -141,20 +126,24 @@ class excelWorkbook {
         return $columnHeadingIndex;
     }
     
+    public function toArray(){
+        //TODO: PRBO - Maybe use a better name for this. Its not just an array because many actions have been performed on it.
+    }
+    
     /**
      * 
      * @return string JSON string that represent the excelWorkbook of this object
      */
     public function toJSON(){
-        //TODO: output the name of the sheets
         if($this->excelWorkbook){
 
             $ryJSONReturn = array();
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
 
-               $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
-               //TODO: PRBO - set the first element in the array to the column index for this sheet
+               
                $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndexOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->columnHeadingIndecies[$i]);
+               $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
+               $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndeciesLength[$i]);   //removes data longer than the column heading length
                
                $ryJSONReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
                $ryJSONReturn["excelWorksheets"][$i]["title"] = $this->_excelWorksheets[$i]->getTitle();     //get sheet titles
@@ -174,7 +163,7 @@ class excelWorkbook {
         }
     }
     
-    public function setColumnHeadingIndexOfArrayWorksheet(array $worksheet, $columnHeadingIndex){
+    public function setColumnHeadingIndexOfArrayWorksheet($worksheet, $columnHeadingIndex){
         $ryReturn = array();
         for($i=($columnHeadingIndex-1);$i<count($worksheet);$i++){
             $ryReturn[] = $worksheet[$i];
@@ -296,6 +285,24 @@ class excelWorkbook {
                 }
             }
         }
+    }
+    
+    /**
+     * Rebuilds an array without data that is longer than the column heading row, then returns the new array
+     * @param array $ryExcelWorksheet The worksheet (as an array) that will be rebuilt
+     * @param integer $bounds The amount of cells that each new row will have
+     * @return array
+     */
+    private function removeColumnsBeyondBounds($ryExcelWorksheet, $bounds){
+        $ryReturn = array();
+        foreach($ryExcelWorksheet as $row){
+            $ryRow = array();
+            for($i=0;$i<$bounds;$i++){
+                $ryRow[] = $row[$i];
+            }
+            $ryReturn[] = $ryRow;
+        }
+        return $ryReturn;
     }
     /**
      * Finds the most occuring length of a row
