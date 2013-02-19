@@ -55,6 +55,8 @@ class excelWorkbook {
         $this->excelWorkbook = $PHPExcelFile;
         if($this->excelWorkbook){
             
+            //TODO: PRBO - This really has to get cleaned up. It's like this for now because I'm working on it
+            
             $this->removeHiddenColumns();
             
             $this->sheetCount = $this->excelWorkbook->getSheetCount();
@@ -146,28 +148,28 @@ class excelWorkbook {
     public function toJSON(){
         //TODO: output the name of the sheets
         if($this->excelWorkbook){
-            
+
             $ryJSONReturn = array();
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
 
-               $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);    //remove null rows
+               $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
                //TODO: PRBO - set the first element in the array to the column index for this sheet
                $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndexOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->columnHeadingIndecies[$i]);
                
-               //TODO: PRBO - FIXME When the AJAX call back is received by the landing page, it cannot decode the JSON object. This is the line of code that is screwing it up. Find out what that is all about. I think it has to do with one of the arrays being empty.
-               //$ryJSONReturn["dataTypes"][$i] = $this->getColumnDataTypes($i);  //get data types
-               
-               $ryJSONReturn["excelWorksheets"][$i]["title"] = $this->_excelWorksheets[$i]->getTitle(); 
-               $ryJSONReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];//put the worksheet in the array that will be encoded
+               $ryJSONReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
+               $ryJSONReturn["excelWorksheets"][$i]["title"] = $this->_excelWorksheets[$i]->getTitle();     //get sheet titles
+               $ryJSONReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
             }
             
-            $ryJSONReturn["responseStatus"] = "success";
+            $ryJSONReturn["responseStatus"] = "success";                                                    //say everything went well
 
             return json_encode($ryJSONReturn);
             
         } else {
-            
-            return '{"responseStatus":"error"}';    //if there is no excel file, and error must be reported
+            $ryJSONError = array();
+            $ryJSONError["responseStatus"] = "error";
+            $ryJSONError["errorMessage"] = "The file could not be found";
+            return json_encode($ryJSONError);                                   //if there is no excel file, and error must be reported
             
         }
     }
@@ -188,7 +190,7 @@ class excelWorkbook {
         $cellTypes = array();
         $i = 0;
         $sheet = $this->_ryExcelWorksheets[$sheetIndex];                        //get the sheet asked for
-        $row = $sheet[ $this->columnHeadingIndecies[$sheetIndex]+1 ];           //use the row after the columnHeadingIndex for this sheet
+        $row = $sheet[ $this->columnHeadingIndecies[$sheetIndex] ];           //use the row after the columnHeadingIndex for this sheet
         foreach($row as $cell){                                                 //get the type for each cell
             switch($primitiveTypes[$i]){                                        //using a switch statement here because all values are known
                 case "s" :

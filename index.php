@@ -33,13 +33,13 @@
                         
                         htmlOut += "<table>";
                         
-                        //htmlOut += "<tr>";
-                        //for (var dataTypeCell in data.dataTypes[i]){
-                        //    htmlOut += "<td>";
-                        //    htmlOut += data.dataTypes[i][dataTypeCell];                        //show the cell contents
-                        //    htmlOut += "</td>";
-                        //}
-                        //htmlOut += "</tr>";
+                        htmlOut += "<tr>";
+                        for (var columnType in excelWorksheet.columnTypes){
+                            htmlOut += "<td>";
+                            htmlOut += excelWorksheet.columnTypes[columnType];                        //show the cell contents
+                            htmlOut += "</td>";
+                        }
+                        htmlOut += "</tr>";
                         for(var row in excelWorksheet.sheetData){                                      //for each row of data
                             htmlOut += "<tr>";
                             for(var cell in excelWorksheet.sheetData[row]){                            //for each cell in the row
@@ -53,7 +53,7 @@
                     }
                     $('#results').html(htmlOut);
                 } else {
-                    $('#results').html("Error processing your document");           //show an error message
+                    $('#results').html(data.errorMessage);           //show an error message
                 }
             }
         </script>
