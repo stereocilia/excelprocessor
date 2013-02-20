@@ -90,7 +90,7 @@ class excelWorkbook {
             foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
                 $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);                              //get the count of consecutive data cells
             }
-            $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);
+            $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);                         //find length of most common row
 
             $columnHeadingIndex = $this->firstRowOf($ryDataFilledCellCounts, $mostCommonRowLength);             //find the first occurance of that row, this is the index
         }   
@@ -101,7 +101,7 @@ class excelWorkbook {
      * Finds the index that a row or a specific length occurs
      * @param array $worksheet A worksheet as an array
      * @param int $length The length of the row to find. This is the count of cells.
-     * @return int
+     * @return int First occurence row at the given length
      */
     private function firstRowOf($worksheet, $length){
         $firstOccuranceIndex = NULL;
@@ -330,6 +330,7 @@ class excelWorkbook {
         if( is_array($worksheet) ){
             $worksheet = array_count_values($worksheet);
             arsort($worksheet, SORT_NUMERIC);
+            //TODO: PRBO - Check this is greater than one. if not, find a different value!
             return key($worksheet);
         }
     }
