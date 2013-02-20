@@ -8,11 +8,6 @@ require_once 'common.php';
  * @author Martin Magana
  */
 class excelWorkbook {
-    /**
-     * Array of PHPExcel_Worksheet
-     * @var array 
-     */
-    private $_excelWorksheets = NULL;
     
     /**
      * Array of Excel Worksheets represented as arrays
@@ -42,9 +37,7 @@ class excelWorkbook {
             
             $this->removeHiddenColumns();
             
-            $this->sheetCount = $this->excelWorkbook->getSheetCount();
-
-            $this->_excelWorksheets = $this->excelWorkbook->getAllSheets();    
+            $this->sheetCount = $this->excelWorkbook->getSheetCount();   
             
             foreach($this->excelWorkbook->getWorksheetIterator() as $sheet){    //turn all sheets into arrays
                 $this->_ryExcelWorksheets[] = $sheet->toArray();
@@ -78,53 +71,51 @@ class excelWorkbook {
         }
         return $dataFilledCellCount;
     }
+    
+    //TODO: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
     /**
      * Tries to find the row containing the names for all the columns
      * 
      * @return Returns the index of the row that appears to conatin the column headings
      */
-    public function findColumnHeadingIndex($sheetIndex = 0){                                          //right now, just the first worksheet. it will have to eventually cycle throw all sheets
-        //must already have an array of excel worksheets for this to work
-        $columnHeadingIndex = NULL;
-        //make sure the index is withing the range of the sheet count
-        if($sheetIndex < $this->sheetCount){
-
+    public function findColumnHeadingIndex($sheetIndex = 0){
+        $columnHeadingIndex = NULL;                                             //must already have an array of excel worksheets for this to work
+        
+        if($sheetIndex < $this->sheetCount){                                    //index must be within sheet count
             //TODO: PRBO - What is the best way to maintain the state of the column index between HTTP requests? Or should it just redectect every time?
             //NOTES: Session var? This can be overrideen by the JSON object that is passed if the user changed is
 
-            //find the first row that has all consecutive cells
             $ryDataFilledCellCounts = array();
-            
-            if($this->_ryExcelWorksheets[$sheetIndex]){
-                foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                          //go through each row
-                    $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);
-                }
-                //find which row had the high count of consecutive data filled cells
-                //return the index of that row
-                $highestCount = 0;
-                foreach($ryDataFilledCellCounts as $count){
-                    if($count>$highestCount){
-                        $highestCount = $count;
-                    }
-                }
-                //now find the first occurance of the highest count
+
+            foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
+                $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);                              //get the count of consecutive data cells
+            }
+            $mostCommonRowLength = $this->mostCommonRowLength( $this->excelWorkbook->getSheet($sheetIndex) );   //find the length of the most common row
+
+            $columnHeadingIndex = $this->firstRowOf($ryDataFilledCellCounts, $mostCommonRowLength);             //find the first occurance of that row, this is the index
+        }   
+        return $columnHeadingIndex;
+    }
+    
+    /**
+     * Finds the index that a row or a specific length occurs
+     * @param array $worksheet A worksheet as an array
+     * @param int $length The length of the row to find. This is the count of cells.
+     * @return int
+     */
+    private function firstRowOf($worksheet, $length){
+        $firstOccuranceIndex = NULL;
+        if( is_array($worksheet) && is_integer($length) ){
                 $i = 1;
-                foreach ($ryDataFilledCellCounts as $count){
-                    if($columnHeadingIndex === NULL){
-                        if($count == $highestCount){
-                            $columnHeadingIndex = $i;
-                        }
+                foreach ($worksheet as $value){
+                    if(  $firstOccuranceIndex === NULL && $value == $length  ){ //if first occurance not set and this length matches the given length
+                        $firstOccuranceIndex = $i;
+                        return $firstOccuranceIndex;
                     }
                     $i++;
                 }
-            }
         }
-        //TODO: PRBO - make excelWorkbook::findColumnHeadingIndex more accurate by implementing ::mostCommonRowLength()
-        //NOTES: At this point the column heading index should be compared with the most common row length.
-        //If the count of consecutive data filled cells is 15, but the most common row length is 14,
-        //you may have found a row with an extra cell. In this case, finding the first row of 14 
-        //consecutive data filled cells is more likely the row you want.
-        return $columnHeadingIndex;
+        return $firstOccuranceIndex;
     }
     
     private function findLastDatasetRows(){
@@ -169,7 +160,7 @@ class excelWorkbook {
                
                
                $ryReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
-               $ryReturn["excelWorksheets"][$i]["title"] = $this->_excelWorksheets[$i]->getTitle();     //get sheet titles
+               $ryReturn["excelWorksheets"][$i]["title"] = $this->excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
                $ryReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
             }
             
@@ -199,7 +190,8 @@ class excelWorkbook {
         return array_reverse($ryReturn);
     }
     
-   /**
+    //TODO: PRBO - getColumnDataTypes - This should calculate a sample of several rows and the datatype that occurs most should be used. Example: what if the first entry is null?
+    /**
      * Gets  data types of all columns for the current excelSheet of $this object
      */
     private function getColumnDataTypes($sheetIndex = 0){
@@ -262,7 +254,7 @@ class excelWorkbook {
      * @return array The data types for each cell as given by PHPExcel_Cell->getDataType()
      */
     private function getColumnPrimitiveDataTypes($sheetIndex = 0){
-        $rowIterator = $this->_excelWorksheets[$sheetIndex]->getRowIterator();
+        $rowIterator = $this->excelWorkbook->getSheet($sheetIndex)->getRowIterator();
         //get the iterator one row after the column index
         for($i=1;$i<=$this->columnHeadingIndices[$sheetIndex];$i++){
             $rowIterator->next();
@@ -334,21 +326,40 @@ class excelWorkbook {
     /**
      * Finds the most occuring length of a row
      */
-    private function mostCommonRowLength(){
-        //TODO: PRBO - mostCommonRowLength - Create the logic for this function
-        //get the cell count for each row
-        //store in array
-        //create a new array for the counts
-        //loop through the original array
-        //see if the original array has a key value of the value from the current loop
-        //if not, create it as a key with the integer 1
-        //if the original array does have the key value, increment it by 1
-        //loop through the counts array
-        //set the key of the first value to a var called highestCount
-        //compare each value to highestCount
-        //if the value is greater than the count of highestCounut, set it as the new key
-        //return the count of the key with the greatest value, this is the most common row length
-        return 0;   //do this for now until the function is implemented
+    private function mostCommonRowLength(PHPExcel_Worksheet $worksheet){
+        $sampleSize = 50;  //TODO: PRBO - mostCommonRowLength - there is a better way to do this besides taking a sample size. For now, just using it.
+        $mostCommonCellCount = NULL;
+        if( get_class($worksheet) == "PHPExcel_Worksheet" ){
+            $cellCountsAll = array();
+            $rowCount = 0;
+            foreach($worksheet->getRowIterator() as $row){
+                $rowCount++;
+                $cellCount = 0;
+                foreach ($row->getCellIterator() as $cell){
+                    $cellCount++;
+                }
+                $cellCountsAll[] = $cellCount;
+                if($rowCount == $sampleSize)
+                    break;
+            }
+            $cellCounts = array();
+            foreach($cellCountsAll as $cellCount){
+                if(array_key_exists($cellCount, $cellCounts)){
+                    $cellCounts[$cellCount]++;
+                } else {
+                    $cellCounts[$cellCount] = 1;
+                }
+            }
+            $greatestTotalOccurances = 0;
+
+            foreach($cellCounts as $count => $totalOccurances){
+                if( ($totalOccurances > $greatestTotalOccurances) && ($count>1) ){  //do not use rows with less than 2 cells... probably not part of the 'dataset'
+                    $greatestTotalOccurances = $totalOccurances;
+                    $mostCommonCellCount = $count;
+                }
+            }
+        }
+        return $mostCommonCellCount;
     }
 
     public function __get($name)
