@@ -60,23 +60,23 @@ class excelWorkbook {
      * @param array $row
      */
     private function consecutiveDataCellCount($row){
-        $dataFilledCellCount = 0;
-        $isConsecutive = TRUE;            
+        //skips verifying if $row is an array for a little extra speed
+        $count = 0;   
         foreach ($row as $cell){                                        //go through each cell
-           if(  ( empty($cell) || $cell == "null" ) && $isConsecutive ){//if the cell is considered empty AND the cells are still considered consecutive
-               $isConsecutive = FALSE;                                  //then we are done doing a cell count
-           } elseif($isConsecutive) {                                   //if the cells are still consecutive
-               $dataFilledCellCount++;                                  //if the cell is not empty, count it
+            if(  $cell === null  ){
+               return $count;
+           } else {
+               $count++;                                  //if the cell is not empty, count it
            }
         }
-        return $dataFilledCellCount;
+        return $count;
     }
     
     //TODO: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
     /**
      * Tries to find the row containing the names for all the columns
      * 
-     * @return Returns the index of the row that appears to conatin the column headings
+     * @return int Returns the index of the row that appears to conatin the column headings
      */
     public function findColumnHeadingIndex($sheetIndex = 0){
         $columnHeadingIndex = NULL;                                             //must already have an array of excel worksheets for this to work
@@ -90,7 +90,7 @@ class excelWorkbook {
             foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
                 $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);                              //get the count of consecutive data cells
             }
-            $mostCommonRowLength = $this->mostCommonRowLength( $this->excelWorkbook->getSheet($sheetIndex) );   //find the length of the most common row
+            $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);
 
             $columnHeadingIndex = $this->firstRowOf($ryDataFilledCellCounts, $mostCommonRowLength);             //find the first occurance of that row, this is the index
         }   
@@ -326,40 +326,12 @@ class excelWorkbook {
     /**
      * Finds the most occuring length of a row
      */
-    private function mostCommonRowLength(PHPExcel_Worksheet $worksheet){
-        $sampleSize = 50;  //TODO: PRBO - mostCommonRowLength - there is a better way to do this besides taking a sample size. For now, just using it.
-        $mostCommonCellCount = NULL;
-        if( get_class($worksheet) == "PHPExcel_Worksheet" ){
-            $cellCountsAll = array();
-            $rowCount = 0;
-            foreach($worksheet->getRowIterator() as $row){
-                $rowCount++;
-                $cellCount = 0;
-                foreach ($row->getCellIterator() as $cell){
-                    $cellCount++;
-                }
-                $cellCountsAll[] = $cellCount;
-                if($rowCount == $sampleSize)
-                    break;
-            }
-            $cellCounts = array();
-            foreach($cellCountsAll as $cellCount){
-                if(array_key_exists($cellCount, $cellCounts)){
-                    $cellCounts[$cellCount]++;
-                } else {
-                    $cellCounts[$cellCount] = 1;
-                }
-            }
-            $greatestTotalOccurances = 0;
-
-            foreach($cellCounts as $count => $totalOccurances){
-                if( ($totalOccurances > $greatestTotalOccurances) && ($count>1) ){  //do not use rows with less than 2 cells... probably not part of the 'dataset'
-                    $greatestTotalOccurances = $totalOccurances;
-                    $mostCommonCellCount = $count;
-                }
-            }
+    private function mostCommonRowLength($worksheet){
+        if( is_array($worksheet) ){
+            $worksheet = array_count_values($worksheet);
+            arsort($worksheet, SORT_NUMERIC);
+            return key($worksheet);
         }
-        return $mostCommonCellCount;
     }
 
     public function __get($name)

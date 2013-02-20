@@ -41,7 +41,7 @@ class controllerExcelTransaction {
 }
 
 //------------------------------------------------------------------------------
-//Srategy handlers for different request types
+//Strategy handlers for different request types
 
 /**
  * Each strategy must receive and evaluate a request, then return a JSON string
