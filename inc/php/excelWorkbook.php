@@ -119,7 +119,7 @@ class excelWorkbook {
                 }
             }
         }
-        //TODO: PRBO - Create a more accurate way of verifying this is the column heading index
+        //TODO: PRBO - make excelWorkbook::findColumnHeadingIndex more accurate by implementing ::mostCommonRowLength()
         //NOTES: At this point the column heading index should be compared with the most common row length.
         //If the count of consecutive data filled cells is 15, but the most common row length is 14,
         //you may have found a row with an extra cell. In this case, finding the first row of 14 
@@ -304,7 +304,7 @@ class excelWorkbook {
     }
     
     private function removeHiddenColumns(){
-        //TODO: PRBO - If the last column is removed, data in the last row remains for some reason
+        //TODO: PRBO - FIXME: If the last column is removed, data in the last row remains for some reason
         foreach($this->excelWorkbook->getAllSheets() as $sheet){
             foreach($sheet->getColumnDimensions() as $dimension){
                 if( !$dimension->getVisible() ){
