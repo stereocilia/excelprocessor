@@ -36,7 +36,7 @@ class controllerExcelTransaction {
         if(array_key_exists($requestData->action, $this->_strategies)){
             return $this->_strategies[$requestData->action]->handleRequest($requestData);
         } else {
-            return '{"responseStatus":"error"}';    //error because action does not exist
+            return json_encode( excelError::createError("The requested action '" . $requestData->action . "' does not exist") );    //error because action does not exist
         }
     }
 }
@@ -72,8 +72,7 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
         }
         
         $loader->previewLength = 50;                                             //how many rows will be previewed. default to 10
-        
-        //TODO: PRBO - handleGetExcelRequest - try/catch errors here and produce JSON error if caught
+
         try{
             $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
         } catch(Exception $e){
