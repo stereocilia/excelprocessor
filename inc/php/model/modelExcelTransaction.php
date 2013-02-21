@@ -11,28 +11,16 @@ require_once ROOT_PATH . '\inc\php\previewFilter.php';           //allows previe
  */
 class modelExcelTransaction {
     /**
-     * The first row returned from the preview
-     * @var integer 
-     */
-    public $columnHeadingIndex = 1;
-    
-    /**
      * How many rows will be displayed with the preview
      * @var integer 
      */
     public $previewLength = 10;
-    
+
      /**
      * If set to true BEFORE calling the load function, load will return a preview of the data in the Excel file loaded.
      * @var boolen  
      */
     public $isPreview = TRUE;
-    
-    /**
-     * If set, the data types will define how they are entered into a database when commit is executed. If not set, the default values will be used.
-     * @var array 
-     */
-    public $dataType = NULL;
     
     /**
      * Loads an Excel file and return an excelWorkbook object
@@ -47,7 +35,6 @@ class modelExcelTransaction {
             }
             $loadedPHPExcelFile = $reader->load($excelFileToRead);              //load the file into memory. this takes the longest to process
             $workbook = new excelWorkbook($loadedPHPExcelFile);         //wrap the PHPExcel file in our excelWorkbook class
-            $workbook->columnHeadingIndex = $this->columnHeadingIndex;  //set the column heading row (index)
             return $workbook;
         } else {
             return new excelWorkbook();    //returning an empty excelWorksheet will produce an error when it is converted to JSON. Since the file could not be loaded, this object represents that.

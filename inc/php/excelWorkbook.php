@@ -8,45 +8,58 @@ require_once 'common.php';
  * @author Martin Magana
  */
 class excelWorkbook {
-    
-    /**
-     * Array of Excel Worksheets represented as arrays
-     * @var type 
-     */
-    private $_ryExcelWorksheets = array();
-    
     /**
      * PHPExcel file returned from the load function of a PHPExcel_Reader class
      * 
      * @var PHPExcel 
      */
-    public $excelWorkbook = NULL;
-    
+    private $_excelWorkbook = NULL;
+    /**
+     * Array of Excel Worksheets represented as arrays
+     * @var type 
+     */
+    private $_ryExcelWorksheets = array();    
+    /**
+     * Array of all indecies of column heading rows for every sheets in excelWorkbook member variable
+     * @var array 
+     */
     private $columnHeadingIndices = array();
-    
+    /**
+     * The row length of each column heading index row
+     * @var array 
+     */
     private $columnHeadingIndicesLength = array();
-    
+    /**
+     * The row index of each sheet in _excelWorkbook member variable that is considered to be the last row of the dataset
+     * @var array 
+     */
     private $lastDatasetRows = array();
-    
-    //TODO: This must be made private and accessable through getter, it's read only. For now I'll leave it so it shows up on code hinting
+    //TODO: PRBO - sheetCount should be available through getter function, effectively making it read only to the outside
+    /**
+     * Count of Excel Worksheets in the excelWorkbook member variable
+     * @var int 
+     */
     private $sheetCount = 0;
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
-        $this->excelWorkbook = $PHPExcelFile;
-        if($this->excelWorkbook){
+        $this->_excelWorkbook = $PHPExcelFile;
+        if($this->_excelWorkbook){
             
             $this->removeHiddenColumns();
             
-            $this->sheetCount = $this->excelWorkbook->getSheetCount();   
+            $this->sheetCount = $this->_excelWorkbook->getSheetCount();   
             
-            foreach($this->excelWorkbook->getWorksheetIterator() as $sheet){    //turn all sheets into arrays
+            foreach($this->_excelWorkbook->getWorksheetIterator() as $sheet){    //turn all sheets into arrays
                 $this->_ryExcelWorksheets[] = $sheet->toArray();
             }
             
             $this->findColumnHeadingIndices();
         }
     }
-    public function findColumnHeadingIndices(){
+    /**
+     * Find the indices of all column heading rows for all sheets in _ryExcelWorksheets member variable
+     */
+    private function findColumnHeadingIndices(){
             //must already have sheet count for this to work
             for($i=0;$i<$this->sheetCount;$i++){
                 $this->columnHeadingIndices[] = $this->findColumnHeadingIndex($i);
@@ -75,7 +88,7 @@ class excelWorkbook {
     //TODO: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
     /**
      * Tries to find the row containing the names for all the columns
-     * 
+     * @param int $sheetIndex Index of the sheet in the excelWorkbook member variable
      * @return int Returns the index of the row that appears to conatin the column headings
      */
     public function findColumnHeadingIndex($sheetIndex = 0){
@@ -117,7 +130,9 @@ class excelWorkbook {
         }
         return $firstOccuranceIndex;
     }
-    
+    /**
+     * Find the index of the row that is considered to be the last of the dataset for all sheets
+     */
     private function findLastDatasetRows(){
         //find the last dataset row of each sheet
         for($i=0;$i<$this->sheetCount;$i++){
@@ -125,9 +140,12 @@ class excelWorkbook {
         }
        
     }
-    
+    /**
+     * Find the index of the row that is considered to be the last of the dataset for the given sheet
+     * @param int $sheetIndex Index of the sheet to use for member variable _excelWorkbook
+     * @return int
+     */
     private function findLastDatasetRow($sheetIndex = 0){
-        //assumes that the first row is the column heading row. setColumnHeadinIndexOfArrayWorksheet() should be called first
         //find the first row after the column heading row where the first cell is empty. this will be the last row of the dataset
         $lastDatasetRow = NULL;
         if($sheetIndex<$this->sheetCount){                                      //given index must be in range
@@ -143,11 +161,26 @@ class excelWorkbook {
         }
         return $lastDatasetRow;
     }
-    
+    /**
+     * Creates an array that represents the Excel Worksheet. This array can be encoded to a JSON object
+     * 
+     * The first property is excelWorksheets, which is an array all of the worksheets in the workbook
+     * JSONObject.excelWorksheets[0] would be the first worksheet.
+     * Each worksheet has the properties columnTypes, title, and sheetData.
+     * JSONObject.excelWorksheets[0].columnTypes    - Array containing the types of each column
+     * JSONObject.excelWorksheets[0].title          - Title of this worksheet
+     * JSONObject.excelWorksheets[0].sheetData      - The data of the actual worksheet (array of rows)
+     * Also has a response status to tell success or failure of the HTTP response.
+     * JSONObject.responseStatus can be "success" or "error"
+     * If the response status is an error then it can contain a message
+     * JSONObject.errorMessage                      - Message associated with this error.
+     * 
+     * @return array
+     */
     public function toArray(){
         //NOTE: The array MUST be able to become a valid JSON object... this means no empty arrays!
         $ryReturn = array();
-        if($this->excelWorkbook){
+        if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
                //TODO: PRBO - Should the setColumnHeading... and setLastDataset... be called together in a function since the both reorganize the data?
                $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndexOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]);//make the first row the column heading row
@@ -160,19 +193,25 @@ class excelWorkbook {
                
                
                $ryReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
-               $ryReturn["excelWorksheets"][$i]["title"] = $this->excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
+               $ryReturn["excelWorksheets"][$i]["title"] = $this->_excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
                $ryReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
             }
             
             $ryReturn["responseStatus"] = "success";                                                    //say everything went well
             
-        } else {
-            $ryReturn["responseStatus"] = "error";
-            $ryReturn["errorMessage"] = "The file could not be found";
+        } else {                                                                                        //no workbook, no array
+            $ryReturn["responseStatus"] = "error";                                                      //report error
+            $ryReturn["errorMessage"] = "The file could not be found";                                  //report error message
         }
         return $ryReturn;
     }
-    
+    //TODO: PRBO - setColumnHeadingIndexOfArrayWorksheet: First, this function name sucks. Second, is there a PHP function that already does this? Seems like there would be.
+    /**
+     * Sets the first item on the given worksheet array to the given column heading index
+     * @param array $worksheet The array to set the index of
+     * @param int $columnHeadingIndex Index of the array element that will now be first
+     * @return array
+     */
     private function setColumnHeadingIndexOfArrayWorksheet($worksheet, $columnHeadingIndex){
         $ryReturn = array();
         for($i=($columnHeadingIndex-1);$i<count($worksheet);$i++){
@@ -180,16 +219,19 @@ class excelWorkbook {
         }
         return $ryReturn;
     }
-    
-    private function setLastDatasetRowOfArrayWorksheet($worksheet, $lastDatasetRow){
-        //rebuild array backward
+    /**
+     * Removes every element of the given array after the given index
+     * @param array $worksheet
+     * @param int $lastDatasetRow
+     * @return array
+     */
+    private function setLastDatasetRowOfArrayWorksheet($worksheet, $lastDatasetRow){    //rebuild array backward
         $ryReturn = array();
-        for($i=( $lastDatasetRow );$i>=0;$i--){
+        for( $i=($lastDatasetRow) ; $i>=0 ; $i-- ){
             $ryReturn[] = $worksheet[$i];
         }
         return array_reverse($ryReturn);
     }
-    
     //TODO: PRBO - getColumnDataTypes - This should calculate a sample of several rows and the datatype that occurs most should be used. Example: what if the first entry is null?
     /**
      * Gets  data types of all columns for the current excelSheet of $this object
@@ -225,8 +267,8 @@ class excelWorkbook {
     }
     /**
      * Handles types that are date, 
-     * @param type $number
-     * @return string
+     * @param ing $number
+     * @return string A string that describes the type
      */
     private function handleNumericType($value){
         $isTime = is_time($value);
@@ -246,15 +288,14 @@ class excelWorkbook {
             
         }
     }
-    
     //NOTE: Should I really rely on the data type that Excel gives me? Wouldn't it be more accurate to find the data types on my own?
     /**
      * Gets primative data types of all columns for the current excelSheet of $this object
-     * 
+     * @param int $sheetIndex Index of the sheet to process from the excelWorkbook member variable
      * @return array The data types for each cell as given by PHPExcel_Cell->getDataType()
      */
     private function getColumnPrimitiveDataTypes($sheetIndex = 0){
-        $rowIterator = $this->excelWorkbook->getSheet($sheetIndex)->getRowIterator();
+        $rowIterator = $this->_excelWorkbook->getSheet($sheetIndex)->getRowIterator();
         //get the iterator one row after the column index
         for($i=1;$i<=$this->columnHeadingIndices[$sheetIndex];$i++){
             $rowIterator->next();
@@ -267,9 +308,10 @@ class excelWorkbook {
         }
         return $cellTypes;
     }
-    
     /**
-     * Removes rows that have all cells set to null in the ryExcelSheet private member
+     * Removes rows that have a data type of null for every cell
+     * @param array $ryExcelWorksheet
+     * @return array
      */
     public function removeNullRows($ryExcelWorksheet){
         $startIndex = 0;
@@ -294,10 +336,12 @@ class excelWorkbook {
             return $ryExcelSheetTemp;
         }
     }
-    
+    /**
+     * Removes the columns of all sheets in excelWorkbook that are marked as hidden
+     */
     private function removeHiddenColumns(){
         //TODO: PRBO - FIXME: If the last column is removed, data in the last row remains for some reason
-        foreach($this->excelWorkbook->getAllSheets() as $sheet){
+        foreach($this->_excelWorkbook->getAllSheets() as $sheet){
             foreach($sheet->getColumnDimensions() as $dimension){
                 if( !$dimension->getVisible() ){
                     $sheet->removeColumn( $dimension->getColumnIndex() );
@@ -310,7 +354,7 @@ class excelWorkbook {
      * Rebuilds an array without data that is longer than the column heading row, then returns the new array
      * @param array $ryExcelWorksheet The worksheet (as an array) that will be rebuilt
      * @param integer $bounds The amount of cells that each new row will have
-     * @return array
+     * @return array The array without columns exceeding the given length
      */
     private function removeColumnsBeyondBounds($ryExcelWorksheet, $bounds){
         $ryReturn = array();
@@ -324,27 +368,21 @@ class excelWorkbook {
         return $ryReturn;
     }
     /**
-     * Finds the most occuring length of a row
+     * Find the length of the most commonly occuring row
+     * @param array $worksheet Excel worksheet as array
+     * @return int The length of the most commonly occuring row
      */
     private function mostCommonRowLength($worksheet){
-        if( is_array($worksheet) ){
-            $worksheet = array_count_values($worksheet);
-            arsort($worksheet, SORT_NUMERIC);
-            //TODO: PRBO - Check this is greater than one. if not, find a different value!
-            return key($worksheet);
+        if( is_array($worksheet) ){                                             //make sure this is an array
+            $worksheet = array_count_values($worksheet);                        //get total count of each key in array
+            arsort($worksheet, SORT_NUMERIC);                                   //reverse sort, keep keys
+            while(  (int)key($worksheet) < 2  ){                                //if this item is less than two rows
+                next($worksheet);                                               //get the next item, this is not the column heading index
+            }
+            return (int)key($worksheet);                                        //return, force to int
         }
+        //TODO: PRBO - mostCommonRowLength - Unhandled error: If the passed value is not an array, the function does not return a value
     }
-
-    public function __get($name)
-    {
-        if (array_key_exists($name, $this->data)) {
-            return $this->data[$name];
-        } else
-            return null;
-    }
-    
-    //get all the sheets
-    //preview all the sheets
 }
 
 ?>

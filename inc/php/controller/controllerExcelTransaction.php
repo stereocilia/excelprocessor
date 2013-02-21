@@ -72,6 +72,7 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
         
         $loader->previewLength = 50;                                             //how many rows will be previewed. default to 10
         
+        //TODO: PRBO - handleGetExcelRequest - try/catch errors here and produce JSON error if caught
         $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
         
         return json_encode( $workbook->toArray() );                             //send back the resulting object as JSON
