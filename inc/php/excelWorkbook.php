@@ -105,31 +105,10 @@ class excelWorkbook {
                 $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);                              //get the count of consecutive data cells
             }
             $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);                         //find length of most common row
-
-            $columnHeadingIndex = $this->firstRowOf($ryDataFilledCellCounts, $mostCommonRowLength);             //find the first occurance of that row, this is the index
+            
+            $columnHeadingIndex = ( (int)array_search($mostCommonRowLength, $ryDataFilledCellCounts) ) + 1;     //find the first occurance of that row, this is the index         
         }   
         return $columnHeadingIndex;
-    }
-    
-    /**
-     * Finds the index that a row or a specific length occurs
-     * @param array $worksheet A worksheet as an array
-     * @param int $length The length of the row to find. This is the count of cells.
-     * @return int First occurence row at the given length
-     */
-    private function firstRowOf($worksheet, $length){
-        $firstOccuranceIndex = NULL;
-        if( is_array($worksheet) && is_integer($length) ){
-                $i = 1;
-                foreach ($worksheet as $value){
-                    if(  $firstOccuranceIndex === NULL && $value == $length  ){ //if first occurance not set and this length matches the given length
-                        $firstOccuranceIndex = $i;
-                        return $firstOccuranceIndex;
-                    }
-                    $i++;
-                }
-        }
-        return $firstOccuranceIndex;
     }
     /**
      * Find the index of the row that is considered to be the last of the dataset for all sheets
@@ -184,7 +163,7 @@ class excelWorkbook {
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
                //TODO: PRBO - Should the setColumnHeading... and setLastDataset... be called together in a function since the both reorganize the data?
-               $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndexOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]);//make the first row the column heading row
+               $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndex($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]);//make the first row the column heading row
                //TODO: Why doesn't this work if called in the constructor function?
                $this->findLastDatasetRows();    //does this need to be called here or somewhere else?
                $this->_ryExcelWorksheets[$i] = $this->setLastDatasetRowOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->lastDatasetRows[$i]);
@@ -205,14 +184,14 @@ class excelWorkbook {
         }
         return $ryReturn;
     }
-    //TODO: PRBO - setColumnHeadingIndexOfArrayWorksheet: First, this function name sucks. Second, is there a PHP function that already does this? Seems like there would be.
+    //TODO: PRBO - setColumnHeadingIndexOfArrayWorksheet: Is there a PHP function that already does this? Seems like there would be.
     /**
      * Sets the first item on the given worksheet array to the given column heading index
      * @param array $worksheet The array to set the index of
      * @param int $columnHeadingIndex Index of the array element that will now be first
      * @return array
      */
-    private function setColumnHeadingIndexOfArrayWorksheet($worksheet, $columnHeadingIndex){
+    private function setColumnHeadingIndex($worksheet, $columnHeadingIndex){
         $ryReturn = array();
         for($i=($columnHeadingIndex-1);$i<count($worksheet);$i++){
             $ryReturn[] = $worksheet[$i];
