@@ -54,7 +54,9 @@ class excelWorkbook {
                 $this->_ryExcelWorksheets[] = $sheet->toArray();
             }
             
+            //TODO: PRBO - __construct - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
             $this->findColumnHeadingIndices();
+            $this->findLastDatasetRows();
         }
     }
     /**
@@ -116,7 +118,7 @@ class excelWorkbook {
     private function findLastDatasetRows(){
         //find the last dataset row of each sheet
         for($i=0;$i<$this->sheetCount;$i++){
-            $this->lastDatasetRows[] = $this->findLastDatasetRow($i);
+            $this->lastDatasetRows[] = $this->findLastDatasetRow($i, $this->columnHeadingIndices[$i]-1);
         }
        
     }
@@ -128,15 +130,15 @@ class excelWorkbook {
     private function findLastDatasetRow($sheetIndex = 0, $startRow = 0){
         //find the first row after the column heading row where the first cell is empty. this will be the last row of the dataset
         $lastRow = NULL;
-        if($sheetIndex<$this->sheetCount){                                      //given index must be in range
+        if($sheetIndex < $this->sheetCount){                                      //given index must be in range
             $sheet = $this->_ryExcelWorksheets[$sheetIndex];
             for($i=$startRow;$i<count($sheet) && $lastRow === NULL ;$i++){
-                if(  ( empty($sheet[$i][0]) || $sheet[$i][0] == "null" ) && $lastRow === NULL ){            //if the first cell is empty or null and last row has yet been found
-                    $lastRow = ($i - 1);                                   //set the row before this one the index
+                if(  ( empty($sheet[$i][0]) || $sheet[$i][0] == "null" )  ){            //if the first cell is empty or null and last row has yet been found
+                    $lastRow = ($i);                                   //set the row before this one the index
                 }
             }
             if($lastRow === NULL){   //set to last row if null
-                $lastRow = ( count($sheet) - 1 );
+                $lastRow = ( count($sheet) );
             }
         }
         return $lastRow;
@@ -162,11 +164,9 @@ class excelWorkbook {
         $ryReturn = array();
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
-                
-                //TODO: PRBO - toArray - This stuff is called in the wrong place
-               $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]-1);
-               $this->findLastDatasetRows();
-               $this->_ryExcelWorksheets[$i] = $this->setLastDatasetRowOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->lastDatasetRows[$i]);
+               //TODO: PRBO - toArray - This stuff is called in the wrong place
+               $dataSetLength = (int)$this->lastDatasetRows[$i]+1 - (int)$this->columnHeadingIndices[$i];
+               $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]-1, $dataSetLength);
                
                $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
                $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows

@@ -71,7 +71,7 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
             }
         }
         
-        $loader->previewLength = 50;                                             //how many rows will be previewed. default to 10
+        $loader->previewLength = 100;                                             //how many rows will be previewed. default to 10
 
         try{
             $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
