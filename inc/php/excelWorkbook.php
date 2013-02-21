@@ -1,5 +1,6 @@
 <?php
 require_once 'common.php';
+require_once 'excelError.php';
 /**
  * An excel worksheet loaded into memory
  * 
@@ -200,8 +201,7 @@ class excelWorkbook {
             $ryReturn["responseStatus"] = "success";                                                    //say everything went well
             
         } else {                                                                                        //no workbook, no array
-            $ryReturn["responseStatus"] = "error";                                                      //report error
-            $ryReturn["errorMessage"] = "The file could not be found";                                  //report error message
+            $ryReturn = excelError::createError("The file could not be found.");
         }
         return $ryReturn;
     }

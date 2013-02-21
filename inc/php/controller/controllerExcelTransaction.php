@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_PATH . '\inc\php\model\modelExcelTransaction.php';
+require_once ROOT_PATH . '\inc\php\excelError.php';
 
 /**
  * Handles AJAX calls to process excel files
@@ -73,7 +74,11 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
         $loader->previewLength = 50;                                             //how many rows will be previewed. default to 10
         
         //TODO: PRBO - handleGetExcelRequest - try/catch errors here and produce JSON error if caught
-        $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
+        try{
+            $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
+        } catch(Exception $e){
+            return json_encode(  excelError::createError( $e->getMessage() )  );
+        }
         
         return json_encode( $workbook->toArray() );                             //send back the resulting object as JSON
     }
