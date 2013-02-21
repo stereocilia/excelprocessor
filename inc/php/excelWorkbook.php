@@ -125,21 +125,21 @@ class excelWorkbook {
      * @param int $sheetIndex Index of the sheet to use for member variable _excelWorkbook
      * @return int
      */
-    private function findLastDatasetRow($sheetIndex = 0){
+    private function findLastDatasetRow($sheetIndex = 0, $startRow = 0){
         //find the first row after the column heading row where the first cell is empty. this will be the last row of the dataset
-        $lastDatasetRow = NULL;
+        $lastRow = NULL;
         if($sheetIndex<$this->sheetCount){                                      //given index must be in range
             $sheet = $this->_ryExcelWorksheets[$sheetIndex];
-            foreach($sheet as $index => $row){
-                if(  ( empty($row[0]) || $row[0] == "null" ) && $lastDatasetRow === NULL ){            //if the first cell is empty or null and last row has yet been found
-                    $lastDatasetRow = ($index - 1);                                   //set the row before this one the index
+            for($i=$startRow;$i<count($sheet) && $lastRow === NULL ;$i++){
+                if(  ( empty($sheet[$i][0]) || $sheet[$i][0] == "null" ) && $lastRow === NULL ){            //if the first cell is empty or null and last row has yet been found
+                    $lastRow = ($i - 1);                                   //set the row before this one the index
                 }
             }
+            if($lastRow === NULL){   //set to last row if null
+                $lastRow = ( count($sheet) - 1 );
+            }
         }
-        if($lastDatasetRow === NULL){   //set to last row if null
-            $lastDatasetRow = (  count( $this->_ryExcelWorksheets[$sheetIndex] ) - 1  );
-        }
-        return $lastDatasetRow;
+        return $lastRow;
     }
     /**
      * Creates an array that represents the Excel Worksheet. This array can be encoded to a JSON object
@@ -162,10 +162,10 @@ class excelWorkbook {
         $ryReturn = array();
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
-               //TODO: PRBO - Should the setColumnHeading... and setLastDataset... be called together in a function since the both reorganize the data?
-               $this->_ryExcelWorksheets[$i] = $this->setColumnHeadingIndex($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]);//make the first row the column heading row
-               //TODO: Why doesn't this work if called in the constructor function?
-               $this->findLastDatasetRows();    //does this need to be called here or somewhere else?
+                
+                //TODO: PRBO - toArray - This stuff is called in the wrong place
+               $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]-1);
+               $this->findLastDatasetRows();
                $this->_ryExcelWorksheets[$i] = $this->setLastDatasetRowOfArrayWorksheet($this->_ryExcelWorksheets[$i], $this->lastDatasetRows[$i]);
                
                $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
@@ -184,7 +184,7 @@ class excelWorkbook {
         }
         return $ryReturn;
     }
-    //TODO: PRBO - setColumnHeadingIndexOfArrayWorksheet: Is there a PHP function that already does this? Seems like there would be.
+    //TODO: PRBO - setColumnHeadingIndex: Is there a PHP function that already does this? Seems like there would be.
     /**
      * Sets the first item on the given worksheet array to the given column heading index
      * @param array $worksheet The array to set the index of
