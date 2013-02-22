@@ -35,12 +35,12 @@ class excelWorkbook {
      * @var array 
      */
     private $lastDatasetRows = array();
-    //TODO: PRBO - sheetCount should be available through getter function, effectively making it read only to the outside
     /**
      * Count of Excel Worksheets in the excelWorkbook member variable
      * @var int 
      */
     private $sheetCount = 0;
+    private $_hiddenColumnIndecies = array();
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
         $this->_excelWorkbook = $PHPExcelFile;
@@ -52,13 +52,15 @@ class excelWorkbook {
      * Call after the workbook has been modified in someway and you want to rebuild the data of the class. Basically refreshed the entire object.
      */
     private function excelWorkbookChanged(){
-            $this->removeHiddenColumns();
             
             $this->sheetCount = $this->_excelWorkbook->getSheetCount();   
-            
+            $ryExcelWorksheetAssoc = array();
             foreach($this->_excelWorkbook->getWorksheetIterator() as $sheet){    //turn all sheets into arrays
-                $this->_ryExcelWorksheets[] = $sheet->toArray();
+                //$this->_ryExcelWorksheets[] = $sheet->toArray();
+                $ryExcelWorksheetAssoc[] = $sheet->toArray(null, true, true, true);
             }
+            $ryExcelWorksheetAssoc = $this->removeHiddenColumns($ryExcelWorksheetAssoc);
+            $this->_ryExcelWorksheets = $this->normalizeArrayValues($ryExcelWorksheetAssoc);
             
             //TODO: PRBO - excelWorkbookChanged - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
             $this->findColumnHeadingIndices();
@@ -70,6 +72,20 @@ class excelWorkbook {
                $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
                $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
             }
+    }
+    /**
+     * Recurse through array elements and make all array integer index based
+     * @param array $ry
+     * @return array
+     */
+    private function normalizeArrayValues($ry){
+        foreach($ry as $element){
+            if(is_array($element)){
+                $element = $this->normalizeArrayValues($element);
+            }
+        }
+        $ry = array_values($ry);
+        return $ry;
     }
     /**
      * Find the indices of all column heading rows for all sheets in _ryExcelWorksheets member variable
@@ -295,14 +311,58 @@ class excelWorkbook {
         }
     }
     /**
-     * Removes the columns of all sheets in excelWorkbook that are marked as hidden
+     * Find the hidden columns in each sheet
      */
-    private function removeHiddenColumns(){
-        //TODO: PRBO - FIXME: If the last column is removed, data in the last row remains for some reason
+    private function findHiddenColumns(){
         foreach($this->_excelWorkbook->getAllSheets() as $sheet){
+            $ryHiddenColumnIndecies = array();
             foreach($sheet->getColumnDimensions() as $dimension){
                 if( !$dimension->getVisible() ){
-                    $sheet->removeColumn( $dimension->getColumnIndex() );
+                    $ryHiddenColumnIndecies[] = $dimension->getColumnIndex();
+                }
+            }
+            $this->_hiddenColumnIndecies[] = $ryHiddenColumnIndecies;
+        }
+    }
+    /**
+     * Removes the columns of all sheets in excelWorkbook that are marked as hidden
+     */
+    private function removeHiddenColumns($sheets){
+        //TODO: PRBO - FIXME: If the last column is removed, data in the last row remains for some reason
+        $this->findHiddenColumns();
+        for($i=0;$i<count($sheets);$i++){
+            for($j=0;$j<count($this->_hiddenColumnIndecies[$i]);$j++){
+                for($k=0;$k<count($sheets[$i]);$k++){
+                    unset($sheets[$i][$k][$this->_hiddenColumnIndecies[$i][$j]]);
+                }
+            }
+        }
+//        foreach($sheets as $key => $sheet){
+//            foreach($this->_hiddenColumnIndecies[$key] as $removeColumnIndex){
+//                foreach($sheet as $row){
+//                    unset($row[$removeColumnIndex]);
+//                }
+//            }
+//        }
+        return $sheets;
+//        foreach($this->_excelWorkbook->getAllSheets() as $sheet){
+//            foreach($sheet->getColumnDimensions() as $dimension){
+//                if( !$dimension->getVisible() ){
+//                    $sheet->removeColumn( $dimension->getColumnIndex() );
+//                }
+//            }
+//        }
+    }
+    /**
+     * 
+     * @param array $columnIndecies An array of column indecies to remove
+     * @param array $sheet The sheet to remove columns from
+     */
+    private function removeColumnsAt($columnIndecies, $sheet){
+        if( count($columnIndecies) > 0 ){
+            foreach($sheet as $row){
+                foreach($columnIndecies as $deleteIndex){
+                    //delete this index from the row
                 }
             }
         }
