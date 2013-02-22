@@ -10,7 +10,7 @@
         <div id="results" style="display: none;"></div>
         <!-- SCRIPTS -->
         <?php include('inc/php/jsInclude.php');                                     //includes all the javascript files needed ?>
-        <script>
+        <script type="text/javascript">
             var excelFilePath = "userdata/data_test.xlsx";                               //for debug only. AJAX file upload should assign this value otherwise.
             //The message displayed while Excel file is being
             var loadingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
@@ -56,6 +56,11 @@
                 }
             }
         </script>
-        <!--//SUGGEST: PRBO - Should the interface enable selection of sheets that will be included / not included in the final commit? -->
+        <!--//TODO: PRBO - Should the interface enable selection of sheets that will be included / not included in the final commit? -->
+        <!--//TODO: PRBO - CSV and ODT files: make sure code works with these files -->
+        <!--//TODO: PRBO - If merged cells detected in DATASET, through error -->
+        <!--//TODO: PRBO - Decided a different row is the start row, how many to submit, and which columns to load -->
+        
+        <!--//TODO: PRBO - Things to think about the future: Mapping from the excel spreadsheet into the database -->
     </body>
 </html>

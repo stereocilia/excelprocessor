@@ -47,6 +47,10 @@ class excelWorkbook {
     private $_hiddenColumnIndecies = array();
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
+        //NOTE: Don't do anything in your constructor but set variables
+        //NOTE: General good practice, constructors are not always good at handling errors
+        //NOTE: you could use a separate method (load for example), so do the other operation
+        //NOTE: "seasoned veteran rule"
         $this->_excelWorkbook = $PHPExcelFile;
         if($this->_excelWorkbook){
             $this->excelWorkbookChanged();
@@ -80,6 +84,8 @@ class excelWorkbook {
                $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
             }
     }
+    //TODO: PRBO - Don't use pass by reference... DEPRECATED!!!
+    //TODO: PRBO - Use the member variable instead
     /**
      * Recurse through array elements and make all arrays integer index based
      * @param array $ry
@@ -198,6 +204,8 @@ class excelWorkbook {
         $ryReturn = array();
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
+                //TODO: PRBO - Reused strings can be constant or enumerated value
+                //NOTE: Make a separate class with constants for the strings
                $ryReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
                $ryReturn["excelWorksheets"][$i]["title"] = $this->_excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
                if($htmlSafe){                                                   //replace newline characters with br for each cell
