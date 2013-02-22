@@ -60,7 +60,7 @@ class excelWorkbook {
                 $this->_ryExcelWorksheets[] = $sheet->toArray();
             }
             
-            //TODO: PRBO - __construct - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
+            //TODO: PRBO - excelWorkbookChanged - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
             $this->findColumnHeadingIndices();
             $this->findLastDatasetRows();
             for($i=0;$i < count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
