@@ -45,7 +45,13 @@ class excelWorkbook {
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
         $this->_excelWorkbook = $PHPExcelFile;
         if($this->_excelWorkbook){
-            
+            $this->excelWorkbookChanged();
+        }
+    }
+    /**
+     * Call after the workbook has been modified in someway and you want to rebuild the data of the class. Basically refreshed the entire object.
+     */
+    private function excelWorkbookChanged(){
             $this->removeHiddenColumns();
             
             $this->sheetCount = $this->_excelWorkbook->getSheetCount();   
@@ -57,7 +63,13 @@ class excelWorkbook {
             //TODO: PRBO - __construct - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
             $this->findColumnHeadingIndices();
             $this->findLastDatasetRows();
-        }
+            for($i=0;$i < count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
+               $dataSetLength = $this->lastDatasetRows[$i]+1 - $this->columnHeadingIndices[$i];
+               $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]-1, $dataSetLength);
+               
+               $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
+               $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
+            }
     }
     /**
      * Find the indices of all column heading rows for all sheets in _ryExcelWorksheets member variable
@@ -87,7 +99,6 @@ class excelWorkbook {
         }
         return $count;
     }
-    
     //TODO: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
     /**
      * Tries to find the row containing the names for all the columns
@@ -164,12 +175,7 @@ class excelWorkbook {
         $ryReturn = array();
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
-               //TODO: PRBO - toArray - This stuff is called in the wrong place
-               $dataSetLength = (int)$this->lastDatasetRows[$i]+1 - (int)$this->columnHeadingIndices[$i];
-               $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]-1, $dataSetLength);
-               
-               $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
-               $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
+
                
                
                $ryReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
@@ -183,33 +189,6 @@ class excelWorkbook {
             $ryReturn = excelError::createError("The file could not be found.");
         }
         return $ryReturn;
-    }
-    //TODO: PRBO - setColumnHeadingIndex: Is there a PHP function that already does this? Seems like there would be.
-    /**
-     * Sets the first item on the given worksheet array to the given column heading index
-     * @param array $worksheet The array to set the index of
-     * @param int $columnHeadingIndex Index of the array element that will now be first
-     * @return array
-     */
-    private function setColumnHeadingIndex($worksheet, $columnHeadingIndex){
-        $ryReturn = array();
-        for($i=($columnHeadingIndex-1);$i<count($worksheet);$i++){
-            $ryReturn[] = $worksheet[$i];
-        }
-        return $ryReturn;
-    }
-    /**
-     * Removes every element of the given array after the given index
-     * @param array $worksheet
-     * @param int $lastDatasetRow
-     * @return array
-     */
-    private function setLastDatasetRowOfArrayWorksheet($worksheet, $lastDatasetRow){    //rebuild array backward
-        $ryReturn = array();
-        for( $i=($lastDatasetRow) ; $i>=0 ; $i-- ){
-            $ryReturn[] = $worksheet[$i];
-        }
-        return array_reverse($ryReturn);
     }
     //TODO: PRBO - getColumnDataTypes - This should calculate a sample of several rows and the datatype that occurs most should be used. Example: what if the first entry is null?
     /**
