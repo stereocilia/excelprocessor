@@ -190,19 +190,19 @@ class excelWorkbook {
      * JSONObject.responseStatus can be "success" or "error"
      * If the response status is an error then it can contain a message
      * JSONObject.errorMessage                      - Message associated with this error.
-     * 
+     * @param boolean $htmlSafe True if all characters should be optimized to display as HTML
      * @return array
      */
-    public function toArray(){
+    public function toArray($htmlSafe = true){
         //NOTE: The array MUST be able to become a valid JSON object... this means no empty arrays!
         $ryReturn = array();
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
-
-               
-               
                $ryReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
                $ryReturn["excelWorksheets"][$i]["title"] = $this->_excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
+               if($htmlSafe){                                                   //replace newline characters with br for each cell
+                   $this->makeWorksheetHTMLSafe($this->_ryExcelWorksheets[$i]); //make sure certain elements will display on a webpage
+               }
                $ryReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
             }
             
@@ -212,6 +212,13 @@ class excelWorkbook {
             $ryReturn = excelError::createError("The file could not be found.");
         }
         return $ryReturn;
+    }
+    private function makeWorksheetHTMLSafe(&$sheet){
+        foreach($sheet as $rowkey => $row){
+            foreach($row as $cellkey => $cell){
+                    $sheet[$rowkey][$cellkey] = nl2br($cell);
+            }
+        }
     }
     //SUGGEST: PRBO - getColumnDataTypes - This should calculate a sample of several rows and the datatype that occurs most should be used. Example: what if the first entry is null?
     /**

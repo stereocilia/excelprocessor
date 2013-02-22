@@ -11,7 +11,7 @@
         <!-- SCRIPTS -->
         <?php include('inc/php/jsInclude.php');                                     //includes all the javascript files needed ?>
         <script>
-            var excelFilePath = "userdata/data.xlsx";                               //for debug only. AJAX file upload should assign this value otherwise.
+            var excelFilePath = "userdata/data_test.xlsx";                               //for debug only. AJAX file upload should assign this value otherwise.
             //The message displayed while Excel file is being
             var loadingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
 
