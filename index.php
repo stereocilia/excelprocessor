@@ -23,7 +23,7 @@
             //displayExcelData function MUST be implemented
             //do whatever you want with the returned JSON object
             function displayExcelData(data){
-                if(data.responseStatus != "error"){                                 //make sure there are now errors
+                if(data.responseStatus !== "error"){                                 //make sure there are now errors
                     var htmlOut = "";
                     for(var i=0;i<data.excelWorksheets.length;i++){
                         var excelWorksheet = data.excelWorksheets[i];                                 //the returned Excel file as a JSON object

@@ -11,14 +11,19 @@ require_once ROOT_PATH . '\inc\php\previewFilter.php';           //allows previe
  */
 class modelExcelTransaction {
     /**
+     * The first row of the preview
+     * @var int 
+     */
+    public $previewStart = 1;
+    /**
      * How many rows will be displayed with the preview
-     * @var integer 
+     * @var int
      */
     public $previewLength = 10;
 
      /**
      * If set to true BEFORE calling the load function, load will return a preview of the data in the Excel file loaded.
-     * @var boolen  
+     * @var boolean  
      */
     public $isPreview = TRUE;
     
@@ -31,7 +36,7 @@ class modelExcelTransaction {
         if(file_exists($excelFileToRead)){
             $reader = PHPExcel_IOFactory::createReaderForFile($excelFileToRead);//This finds the appropriate reader object to read the file
             if($this->isPreview){                                               //read as preview
-               $reader->setReadFilter( new previewFilter($this->columnHeadingIndex, $this->columnHeadingIndex + $this->previewLength) );
+               $reader->setReadFilter( new previewFilter( $this->previewStart, $this->previewStart + $this->previewLength) );
             }
             $loadedPHPExcelFile = $reader->load($excelFileToRead);              //load the file into memory. this takes the longest to process
             $workbook = new excelWorkbook($loadedPHPExcelFile);         //wrap the PHPExcel file in our excelWorkbook class
