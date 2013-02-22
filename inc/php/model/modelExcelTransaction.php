@@ -51,7 +51,11 @@ class modelExcelTransaction {
      */
     public function commit(excelWorkbook $objWorkBook){
         //commit the given workbook
-        //TODO: PRBO - modelExcelTransaction::commit() stub out
+        //see if an existing table already exists for the information
+        //if it does, append new information to the end
+        //if it does not, create a new table for it
+        //insert each row of data into the table
+        //report success to the user
         return 0; //return fail
     }
 }

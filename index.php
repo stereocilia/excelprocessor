@@ -56,6 +56,6 @@
                 }
             }
         </script>
-        <!--TODO: PRBO - Should the interface enable selection of sheets that will be included / not included in the final commit? -->
+        <!--//SUGGEST: PRBO - Should the interface enable selection of sheets that will be included / not included in the final commit? -->
     </body>
 </html>

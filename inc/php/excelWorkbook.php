@@ -68,7 +68,7 @@ class excelWorkbook {
             
             $this->_ryExcelWorksheets = $this->makePlainArray($ryExcelWorksheetAssocNoCols);      //remove associate keys from all arrays, set array to member variable
             
-            //TODO: PRBO - excelWorkbookChanged - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
+            //SUGGEST: PRBO - excelWorkbookChanged - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
             $this->findColumnHeadingIndices();
             $this->findLastDatasetRows();
             
@@ -122,7 +122,7 @@ class excelWorkbook {
         }
         return $count;
     }
-    //TODO: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
+    //SUGGEST: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
     /**
      * Tries to find the row containing the names for all the columns
      * @param int $sheetIndex Index of the sheet in the excelWorkbook member variable
@@ -132,7 +132,7 @@ class excelWorkbook {
         $columnHeadingIndex = NULL;                                             //must already have an array of excel worksheets for this to work
         
         if($sheetIndex < $this->sheetCount){                                    //index must be within sheet count
-            //TODO: PRBO - What is the best way to maintain the state of the column index between HTTP requests? Or should it just redectect every time?
+            //NOTES: PRBO - What is the best way to maintain the state of the column index between HTTP requests? Or should it just redectect every time?
             //NOTES: Session var? This can be overrideen by the JSON object that is passed if the user changed is
 
             $ryDataFilledCellCounts = array();
@@ -213,7 +213,7 @@ class excelWorkbook {
         }
         return $ryReturn;
     }
-    //TODO: PRBO - getColumnDataTypes - This should calculate a sample of several rows and the datatype that occurs most should be used. Example: what if the first entry is null?
+    //SUGGEST: PRBO - getColumnDataTypes - This should calculate a sample of several rows and the datatype that occurs most should be used. Example: what if the first entry is null?
     /**
      * Gets  data types of all columns for the current excelSheet of $this object
      */
@@ -375,8 +375,9 @@ class excelWorkbook {
                 next($worksheet);                                               //get the next item, this is not the column heading index
             }
             return (int)key($worksheet);                                        //return, force to int
+        } else {
+            return 0;
         }
-        //TODO: PRBO - mostCommonRowLength - Unhandled error: If the passed value is not an array, the function does not return a value
     }
 }
 
