@@ -59,8 +59,8 @@ class excelWorkbook {
                 //$this->_ryExcelWorksheets[] = $sheet->toArray();
                 $ryExcelWorksheetAssoc[] = $sheet->toArray(null, true, true, true);
             }
-            $ryExcelWorksheetAssoc = $this->removeHiddenColumns($ryExcelWorksheetAssoc);
-            $this->_ryExcelWorksheets = $this->normalizeArrayValues($ryExcelWorksheetAssoc);
+            $ryExcelWorksheetAssocNoCols = $this->removeHiddenColumns($ryExcelWorksheetAssoc);
+            $this->_ryExcelWorksheets = $this->normalizeArrayValues($ryExcelWorksheetAssocNoCols);
             
             //TODO: PRBO - excelWorkbookChanged - These function should be combined. Conceptually, they are finding the range of the dataset, and the both individually loop through the sheets
             $this->findColumnHeadingIndices();
@@ -78,8 +78,8 @@ class excelWorkbook {
      * @param array $ry
      * @return array
      */
-    private function normalizeArrayValues($ry){
-        foreach($ry as $element){
+    private function normalizeArrayValues(&$ry){
+        foreach($ry as &$element){
             if(is_array($element)){
                 $element = $this->normalizeArrayValues($element);
             }
