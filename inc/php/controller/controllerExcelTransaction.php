@@ -1,6 +1,7 @@
 <?php
 require_once ROOT_PATH . '\inc\php\model\modelExcelTransaction.php';
 require_once ROOT_PATH . '\inc\php\excelError.php';
+require_once ROOT_PATH . '\inc\php\jsonKeys.php';
 
 /**
  * Handles AJAX calls to process excel files
@@ -50,14 +51,30 @@ class controllerExcelTransaction {
 interface IHandleRequestStrategy{
     public function handleRequest($requestData);
 }
-
+/**
+ * Common functions for request handlers
+ */
+abstract class handleRequestAbstract {
+    /**
+     * Prepares the worksheet array to be displayed as HTML
+     * @param type $sheet
+     */
+    protected function makeWorksheetHTMLSafe($sheet){
+        foreach($sheet as $rowkey => $row){
+            foreach($row as $cellkey => $cell){
+                    $sheet[$rowkey][$cellkey] = nl2br($cell);
+            }
+        }
+        return $sheet;
+    }
+}
 /**
  * Handles the request action 'get'
  * 
  * The get request action show a preview of information that will be commit to the database. This will most likely be the most common type of request
  * 
  */
-class handleGetExcelRequest implements IHandleRequestStrategy{
+class handleGetExcelRequest extends handleRequestAbstract implements IHandleRequestStrategy{
     /**
      * Call when the JSON object's property action is set to 'get'
      * @return string The string returned is a JSON object that represent the ExcelSheet object that has been loaded
@@ -79,14 +96,22 @@ class handleGetExcelRequest implements IHandleRequestStrategy{
             return json_encode(  excelError::createError( $e->getMessage() )  );
         }
         
-        return json_encode( $workbook->toArray() );                             //send back the resulting object as JSON
+        $ryWorkbook = $workbook->toArray();
+        
+        //make the sheet data displayable for HTML
+        foreach($ryWorkbook[jsonKeys::excelWorksheets] as $sheet){
+            $htmlSafeSheetData = $this->makeWorksheetHTMLSafe( $sheet[jsonKeys::sheetData] );
+            $sheet[jsonKeys::sheetData] = $htmlSafeSheetData;   
+        }
+        
+        return json_encode( $ryWorkbook );                             //send back the resulting object as JSON
     }
 }
 
 /**
  * Enters excel data into a mySQL database
  */
-class handleCommitExcelRequest implements IHandleRequestStrategy{
+class handleCommitExcelRequest extends handleRequestAbstract implements IHandleRequestStrategy{
     /**
      * Only reports error right now, not implemented
      * @param type $requestData
@@ -100,16 +125,15 @@ class handleCommitExcelRequest implements IHandleRequestStrategy{
         //make a changes needed
         //commit the changes
         if($loader->commit($workbook)===0){                                     //just for the stub out, this will change
-           return '{"responseStatus":"error"}'; 
+           return excelError::createError("Commit functionality not yet created"); 
         }
-        
     }
 }
 
 /**
  * Returns all data from excel file (not a preview) to be displayed on the webpage. Not sure how often this will be used
  */
-class handleGetAllExcelRequest implements IHandleRequestStrategy{
+class handleGetAllExcelRequest extends handleRequestAbstract implements IHandleRequestStrategy{
     /**
      * Only reports error right now, not implemented
      * @param type $requestData

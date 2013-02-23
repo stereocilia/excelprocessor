@@ -1,6 +1,7 @@
 <?php
 require_once 'common.php';
 require_once 'excelError.php';
+require_once 'jsonKeys.php';
 /**
  * An excel worksheet loaded into memory
  * 
@@ -199,34 +200,24 @@ class excelWorkbook {
      * @param boolean $htmlSafe True if all characters should be optimized to display as HTML
      * @return array
      */
-    public function toArray($htmlSafe = true){
+    public function toArray(){
         //NOTE: The array MUST be able to become a valid JSON object... this means no empty arrays!
         $ryReturn = array();
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
                 //TODO: PRBO - Reused strings can be constant or enumerated value
                 //NOTE: Make a separate class with constants for the strings
-               $ryReturn["excelWorksheets"][$i]["columnTypes"] = $this->getColumnDataTypes($i);         //get data types
-               $ryReturn["excelWorksheets"][$i]["title"] = $this->_excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
-               if($htmlSafe){                                                   //replace newline characters with br for each cell
-                   $this->makeWorksheetHTMLSafe($this->_ryExcelWorksheets[$i]); //make sure certain elements will display on a webpage
-               }
-               $ryReturn["excelWorksheets"][$i]["sheetData"] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
+               $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::columnTypes] = $this->getColumnDataTypes($i);         //get data types
+               $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::title] = $this->_excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
+               $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::sheetData] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
             }
             
-            $ryReturn["responseStatus"] = "success";                                                    //say everything went well
+            $ryReturn[jsonKeys::responseStatus] = jsonKeys::responseSuccess;                                                    //say everything went well
             
         } else {                                                                                        //no workbook, no array
             $ryReturn = excelError::createError("The file could not be found.");
         }
         return $ryReturn;
-    }
-    private function makeWorksheetHTMLSafe(&$sheet){
-        foreach($sheet as $rowkey => $row){
-            foreach($row as $cellkey => $cell){
-                    $sheet[$rowkey][$cellkey] = nl2br($cell);
-            }
-        }
     }
     //SUGGEST: PRBO - getColumnDataTypes - This should calculate a sample of several rows and the datatype that occurs most should be used. Example: what if the first entry is null?
     /**
