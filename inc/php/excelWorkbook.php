@@ -205,8 +205,6 @@ class excelWorkbook {
         $ryReturn = array();
         if($this->_excelWorkbook){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
-                //TODO: PRBO - Reused strings can be constant or enumerated value
-                //NOTE: Make a separate class with constants for the strings
                $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::columnTypes] = $this->getColumnDataTypes($i);         //get data types
                $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::title] = $this->_excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
                $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::sheetData] = $this->_ryExcelWorksheets[$i];           //put the worksheet in the array
