@@ -40,6 +40,7 @@ class modelExcelTransaction {
             }
             $loadedPHPExcelFile = $reader->load($excelFileToRead);              //load the file into memory. this takes the longest to process
             $workbook = new excelWorkbook($loadedPHPExcelFile);         //wrap the PHPExcel file in our excelWorkbook class
+            $workbook->load();
             return $workbook;
         } else {
             return new excelWorkbook();    //returning an empty excelWorksheet will produce an error when it is converted to JSON. Since the file could not be loaded, this object represents that.

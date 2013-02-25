@@ -46,16 +46,21 @@ class excelWorkbook {
      * @var array 
      */
     private $_hiddenColumnIndecies = array();
+    private $_hasLoaded = false;
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
-        //NOTE: Don't do anything in your constructor but set variables
-        //NOTE: General good practice, constructors are not always good at handling errors
-        //NOTE: you could use a separate method (load for example), so do the other operation
-        //NOTE: "seasoned veteran rule"
         $this->_excelWorkbook = $PHPExcelFile;
-        if($this->_excelWorkbook){
-            $this->excelWorkbookChanged();
+    }
+    
+    public function load(PHPExcel $PHPExcelFile = NULL){
+        if($PHPExcelFile){
+            $this->_excelWorkbook = $PHPExcelFile;
         }
+         if($this->_excelWorkbook){
+            $this->excelWorkbookChanged();
+            $this->_hasLoaded = TRUE;
+        }
+        
     }
     /**
      * Call after the workbook has been modified in someway and you want to rebuild the data of the class. Basically refreshed the entire object.
@@ -203,7 +208,7 @@ class excelWorkbook {
     public function toArray(){
         //NOTE: The array MUST be able to become a valid JSON object... this means no empty arrays!
         $ryReturn = array();
-        if($this->_excelWorkbook){
+        if($this->_hasLoaded){
             for($i=0;$i<count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
                $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::columnTypes] = $this->getColumnDataTypes($i);         //get data types
                $ryReturn[jsonKeys::excelWorksheets][$i][jsonKeys::title] = $this->_excelWorkbook->getSheet($i)->getTitle();     //get sheet titles
@@ -213,7 +218,12 @@ class excelWorkbook {
             $ryReturn[jsonKeys::responseStatus] = jsonKeys::responseSuccess;                                                    //say everything went well
             
         } else {                                                                                        //no workbook, no array
-            $ryReturn = excelError::createError("The file could not be found.");
+            if(!$this->_excelWorkbook){
+                $ryReturn = excelError::createError("The file could not be found.");   
+            } else {
+                $ryReturn = excelError::createError("The load() function was not called on excelWorkbook object before trying to use it.");   
+            }
+            
         }
         return $ryReturn;
     }
