@@ -14,7 +14,7 @@ $pageController = new controllerExcelTransaction();                             
 $output = $pageController->handleRequest($requestData);                         //give the request data to the controller
 
 if(ob_get_length()){                                                            //if compiler tried to send output already, there was an error
-    $output = json_encode(  excelError::createError( ob_get_contents() )  );    //create error message out of the contents
+    $output = json_encode(  excelError::createJSONError( ob_get_contents() )  );    //create error message out of the contents
 }
 
 ob_end_clean();                                                                 //stop caching and clear buffer

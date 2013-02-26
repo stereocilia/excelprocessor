@@ -9,6 +9,9 @@
             document.write(myobject.name);
         </script>
 <?php
+$test = "test";
+echo substr_replace($test, 's', strlen($test)-1);
+
 //define(  ROOT_PATH, realpath( dirname(__FILE__) )  );
 
 //require_once 'inc\php\common.php';

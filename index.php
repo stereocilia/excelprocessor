@@ -52,7 +52,9 @@
                     }
                     $('#results').html(htmlOut);
                 } else {
-                    $('#results').html(data.errorMessage);           //show an error message
+                    var errorMessage = excelError.errorType[data.errorType].message;
+                    errorMessage += "<br>" + data.errorMessage;
+                    $('#results').html(errorMessage);           //show an error message
                 }
             }
         </script>

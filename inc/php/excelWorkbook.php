@@ -57,8 +57,8 @@ class excelWorkbook {
             $this->_excelWorkbook = $PHPExcelFile;
         }
          if($this->_excelWorkbook){
-            $this->excelWorkbookChanged();
             $this->_hasLoaded = TRUE;
+            $this->excelWorkbookChanged();
         }
         
     }
@@ -66,6 +66,27 @@ class excelWorkbook {
      * Call after the workbook has been modified in someway and you want to rebuild the data of the class. Basically refreshed the entire object.
      */
     private function excelWorkbookChanged(){
+        
+            //-----------
+            //detecting merged cells and creating an error if found
+            $mergedCells = $this->detectMergedCells();
+            $excelError = NULL;
+            foreach ($mergedCells as $key => $isMerged){
+                if($isMerged){
+                    if($excelError === NULL){
+                        $excelError = new excelError("Merged cells detected in sheet(s) ");
+                        $excelError->setType(excelError::VALTYPEMERGEDCELLS);
+                    }
+                    $excelError->addToMessage($key+1 . " ,");
+                }
+            }
+            if($excelError !== NULL){
+                //remove the trailing comma
+                $newMessage = $excelError->getMessage();
+                $excelError->setMessage( substr_replace($newMessage, '. ', strlen($newMessage)-2) );
+                $excelError->throwSelfAsJSON();
+            }
+            
             $this->sheetCount = $this->_excelWorkbook->getSheetCount();
             
             //make temporary array the represents all the sheets
@@ -90,14 +111,48 @@ class excelWorkbook {
                $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
             }
     }
-    //TODO: PRBO - Don't use pass by reference... DEPRECATED!!!
-    //TODO: PRBO - Use the member variable instead
+    /**
+     * Check if the object is properly loaded, if not throws an exception with appropriate message
+     * @param string $functionName The name of the function calling this function
+     * @throws Exception
+     */
+    private function checkLoadWithException($functionName = ""){
+        $suffix = "";
+        if($functionName){
+            $suffix = " from call of " . $functionName;
+        }
+        if(!$this->_excelWorkbook){
+            throw new Exception(excelError::MSGFILENOTFOUND . $suffix );
+        } elseif(!$this->_hasLoaded) {
+            throw new Exception(excelError::MSGLOADNOTCALLED . $suffix );
+        }
+
+    }
+    private function detectMergedCells(){
+        //TODO: PRBO - FIXME: detectMergedCells checks the ENTIRE file, but should only be detecting with the dataset
+        $this->checkLoadWithException(__FUNCTION__);
+        $ryMerged = array();
+        foreach($this->_excelWorkbook->getAllSheets() as $sheet){
+            if($sheet->getMergeCells()){
+                $ryMerged[] = TRUE;
+            } else {
+                $ryMerged[] = FALSE;
+            }
+        }
+        return $ryMerged;
+    }
+    private function areCellsInDataset($mergedCelss){
+        $inDataset = FALSE;
+        //TODO: PRBO - areCellsInDataset - do this!!!!!!
+        //NOTE: I need the dataset before I can do this.
+        return $inDataset;
+    }
     /**
      * Recurse through array elements and make all arrays integer index based
      * @param array $ry
      * @return array
      */
-    private function makePlainArray(&$ry){
+    private function makePlainArray($ry){
         foreach($ry as &$element){
             if(is_array($element)){
                 $element = $this->makePlainArray($element);
@@ -219,9 +274,9 @@ class excelWorkbook {
             
         } else {                                                                                        //no workbook, no array
             if(!$this->_excelWorkbook){
-                $ryReturn = excelError::createError("The file could not be found.");   
+                $ryReturn = excelError::createJSONError("The file could not be found.");   
             } else {
-                $ryReturn = excelError::createError("The load() function was not called on excelWorkbook object before trying to use it.");   
+                $ryReturn = excelError::createJSONError("The load() function was not called on excelWorkbook object before trying to use it.");   
             }
             
         }

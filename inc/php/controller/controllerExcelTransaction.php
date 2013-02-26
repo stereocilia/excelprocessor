@@ -37,7 +37,7 @@ class controllerExcelTransaction {
         if(array_key_exists($requestData->action, $this->_strategies)){
             return $this->_strategies[$requestData->action]->handleRequest($requestData);
         } else {
-            return json_encode( excelError::createError("The requested action '" . $requestData->action . "' does not exist") );    //error because action does not exist
+            return json_encode( excelError::createJSONError("The requested action '" . $requestData->action . "' does not exist") );    //error because action does not exist
         }
     }
 }
@@ -93,7 +93,10 @@ class handleGetExcelRequest extends handleRequestAbstract implements IHandleRequ
         try{
             $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
         } catch(Exception $e){
-            return json_encode(  excelError::createError( $e->getMessage() )  );
+            if(strpos($e->getMessage(), excelError::SELFTHROWN)!== FALSE){
+                return substr($e->getMessage(), strlen(excelError::SELFTHROWN));
+            }
+            return json_encode(  excelError::createJSONError( $e->getMessage() )  );
         }
         
         $ryWorkbook = $workbook->toArray();
@@ -125,7 +128,7 @@ class handleCommitExcelRequest extends handleRequestAbstract implements IHandleR
         //make a changes needed
         //commit the changes
         if($loader->commit($workbook)===0){                                     //just for the stub out, this will change
-           return excelError::createError("Commit functionality not yet created"); 
+           return excelError::createJSONError("Commit functionality not yet created"); 
         }
     }
 }

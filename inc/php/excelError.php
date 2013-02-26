@@ -2,21 +2,55 @@
 /**
  * Creates error objects that can be converted to JSON and passed to the handling webpage
  *
- * @author mmagana
+ * @author Martin Magana <magana.web@gmail.com>
  */
 class excelError {
-    const ERRORKEY = "responseStatus";
-    const ERRORVALUE = "error";
-    const ERRORMSGKEY = "errorMessage";
-    const ERRORMSGVALUEDEFAULT = "An undefined error has occured";
+    const KEYERROR = "responseStatus";
+    const KEYTYPE = "errorType";
+    const VALERROR = "error";
+    const VALTYPEGENERAL = "general";
+    const VALTYPEMERGEDCELLS = "mergedcells";
+    const KEYERRORMSG = "errorMessage";
+    const MSGDEFAULTERROR = "An undefined error has occured.";
+    const MSGFILENOTFOUND = "The file could not be found.";
+    const MSGLOADNOTCALLED = "The load() function was not called on excelWorkbook object before trying to use it.";
+    
+    const SELFTHROWN = "<SELFTHROWN>";
+    
     private $ryError = array();
     
+    private $errorTypes = array();
+    
     public function __construct($msg = "") {
-        $this->ryError[self::ERRORKEY] = self::ERRORVALUE;
+        $this->errorTypes[self::VALTYPEGENERAL] = self::KEYTYPE; 
+        $this->errorTypes[self::VALTYPEMERGEDCELLS] = self::KEYTYPE; 
+        
+        $this->ryError[self::KEYERROR] = self::VALERROR;
+        $this->ryError[self::KEYTYPE] = self::VALTYPEGENERAL;
         if( !empty($msg) ){
-            $this->ryError[self::ERRORMSGKEY] = $msg;
+            $this->ryError[self::KEYERRORMSG] = $msg;
         } else {
-            $this->ryError[self::ERRORMSGKEY] = self::ERRORMSGVALUEDEFAULT;
+            $this->ryError[self::KEYERRORMSG] = self::MSGDEFAULTERROR;
+        }
+    }
+    
+    public function addToMessage($msg){
+        $this->ryError[self::KEYERRORMSG] .= $msg;
+    }
+    
+    public function setMessage($msg){
+        $this->ryError[self::KEYERRORMSG] = $msg;
+    }
+    
+    public function getMessage(){
+        return $this->ryError[self::KEYERRORMSG];
+    }
+    
+    public function setType($type = ""){
+        if(array_key_exists($type, $this->errorTypes)){
+            $this->ryError[self::KEYTYPE] = $type;
+        } else {
+            throw new Exception("Exception: supplied error type $type does not exist");
         }
     }
     
@@ -24,12 +58,21 @@ class excelError {
         return $this->ryError;
     }
     
-    static public function createError($msg=""){
-        $ryError[self::ERRORKEY] = self::ERRORVALUE;
+    public function throwSelf(){
+        throw new Exception($this->ryError[self::KEYERRORMSG]);
+    }
+    
+    public function throwSelfAsJSON(){
+        throw new Exception("<SELFTHROWN>" . json_encode($this->ryError));
+    }
+    
+    static public function createJSONError($msg=""){
+        $ryError[self::KEYERROR] = self::VALERROR;
+        $this->ryError[self::KEYTYPE] = self::VALTYPEGENERAL;
         if( !empty($msg) ){
-            $ryError[self::ERRORMSGKEY] = $msg;
+            $ryError[self::KEYERRORMSG] = $msg;
         } else {
-            $ryError[self::ERRORMSGKEY] = self::ERRORMSGVALUEDEFAULT;
+            $ryError[self::KEYERRORMSG] = self::MSGDEFAULTERROR;
         }
         return $ryError;
     }
