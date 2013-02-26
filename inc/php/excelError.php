@@ -1,4 +1,6 @@
 <?php
+
+//TODO: PRBO - Make a class that inherits exception and have a function that converts it to JSON
 /**
  * Creates error objects that can be converted to JSON and passed to the handling webpage
  *
@@ -7,10 +9,12 @@
 class excelError {
     const KEYERROR = "responseStatus";
     const KEYTYPE = "errorType";
+    const KEYERRORMSG = "errorMessage";
+    
     const VALERROR = "error";
     const VALTYPEGENERAL = "general";
     const VALTYPEMERGEDCELLS = "mergedcells";
-    const KEYERRORMSG = "errorMessage";
+    
     const MSGDEFAULTERROR = "An undefined error has occured.";
     const MSGFILENOTFOUND = "The file could not be found.";
     const MSGLOADNOTCALLED = "The load() function was not called on excelWorkbook object before trying to use it.";
@@ -32,6 +36,13 @@ class excelError {
         } else {
             $this->ryError[self::KEYERRORMSG] = self::MSGDEFAULTERROR;
         }
+    }
+    
+    public function loadException(Exception $e){
+        $this->ryError[self::KEYERRORMSG] = $e->getMessage();
+        $this->ryError[self::KEYERRORMSG] .= $e->getFile() . "<br>";
+        $this->ryError[self::KEYERRORMSG] .= $e->getLine() . "<br>";
+        $this->ryError[self::KEYERRORMSG] .= $e->getTraceAsString() . "<br>";
     }
     
     public function addToMessage($msg){

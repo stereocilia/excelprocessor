@@ -250,6 +250,7 @@ class excelWorkbook {
             foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
                 $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);                              //get the count of consecutive data cells
             }
+            //TODO: PRBO - error here when loading ODS file
             $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);                         //find length of most common row
             
             $columnHeadingIndex = ( (int)array_search($mostCommonRowLength, $ryDataFilledCellCounts) ) + 1;     //find the first occurance of that row, this is the index         
@@ -263,7 +264,7 @@ class excelWorkbook {
         //find the last dataset row of each sheet
         for($i=0;$i<$this->sheetCount;$i++){
             $this->lastDatasetRows[] = $this->findLastDatasetRow($i, $this->columnHeadingIndices[$i]-1);
-        }
+        } 
        
     }
     /**
@@ -488,7 +489,7 @@ class excelWorkbook {
             }
             return (int)key($worksheet);                                        //return, force to int
         } else {
-            return 0;
+            return 0;   //TODO: PRBO - throw error here
         }
     }
 }
