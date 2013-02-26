@@ -9,9 +9,33 @@
             document.write(myobject.name);
         </script>
 <?php
-$test = "test";
-echo substr_replace($test, 's', strlen($test)-1);
-
+//$test = "test";
+//echo substr_replace($test, 's', strlen($test)-1);
+//echo ord('C')-64;
+$column = 'AA';
+$ryInt = array();
+$int = 0;
+$i = 0;
+for($i=0;$i<strlen($column);$i++){
+    $ryInt[] = (  ord($column[$i]) - 64  );
+    //$int = (  ord($column[$i]) - 64  ) + $i * 26;
+}
+var_dump($ryInt);
+//for($i=0;$i<strlen($column);$i++){
+//    $ryInt[$i] = (   (  25 * ( strlen($column) - 1 - $i )  ) * $ryInt[$i]   ) + $ryInt[$i];
+//}
+//var_dump($ryInt);
+//echo array_sum($ryInt);
+$ryInt = array_reverse($ryInt);
+$sum = 0;
+for($i=0;$i<strlen($column);$i++){
+  if($i === 0){
+      $sum += $ryInt[$i];
+  } else {
+      $sum += (  $ryInt[$i] * pow(26, $i)  );
+  }
+}
+echo $sum;
 //define(  ROOT_PATH, realpath( dirname(__FILE__) )  );
 
 //require_once 'inc\php\common.php';

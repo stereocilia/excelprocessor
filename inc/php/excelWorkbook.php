@@ -66,26 +66,8 @@ class excelWorkbook {
      * Call after the workbook has been modified in someway and you want to rebuild the data of the class. Basically refreshed the entire object.
      */
     private function excelWorkbookChanged(){
-        
-            //-----------
-            //detecting merged cells and creating an error if found
-            $mergedCells = $this->detectMergedCells();
-            $excelError = NULL;
-            foreach ($mergedCells as $key => $isMerged){
-                if($isMerged){
-                    if($excelError === NULL){
-                        $excelError = new excelError("Merged cells detected in sheet(s) ");
-                        $excelError->setType(excelError::VALTYPEMERGEDCELLS);
-                    }
-                    $excelError->addToMessage($key+1 . " ,");
-                }
-            }
-            if($excelError !== NULL){
-                //remove the trailing comma
-                $newMessage = $excelError->getMessage();
-                $excelError->setMessage( substr_replace($newMessage, '. ', strlen($newMessage)-2) );
-                $excelError->throwSelfAsJSON();
-            }
+            
+            $this->checkLoadWithException(__FUNCTION__);
             
             $this->sheetCount = $this->_excelWorkbook->getSheetCount();
             
@@ -103,6 +85,12 @@ class excelWorkbook {
             $this->findColumnHeadingIndices();
             $this->findLastDatasetRows();
             
+            //-----------
+            //detecting merged cells and creating an error if found
+            //$mergedCells = $this->detectMergedCells();
+            
+            //TODO: PRBO - find the merged cells in the dataset with the new indices information
+            
             for($i=0;$i < count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
                $dataSetLength = $this->lastDatasetRows[$i]+1 - $this->columnHeadingIndices[$i];
                $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]-1, $dataSetLength);
@@ -110,6 +98,25 @@ class excelWorkbook {
                $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
                $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
             }
+            
+
+
+//            $excelError = NULL;
+//            foreach ($mergedCells as $key => $isMerged){
+//                if($isMerged){
+//                    if($excelError === NULL){
+//                        $excelError = new excelError("Merged cells detected in sheet(s) ");
+//                        $excelError->setType(excelError::VALTYPEMERGEDCELLS);
+//                    }
+//                    $excelError->addToMessage($key+1 . " ,");
+//                }
+//            }
+//            if($excelError !== NULL){
+//                //remove the trailing comma
+//                $newMessage = $excelError->getMessage();
+//                $excelError->setMessage( substr_replace($newMessage, '. ', strlen($newMessage)-2) );
+//                $excelError->throwSelfAsJSON();
+//            }
     }
     /**
      * Check if the object is properly loaded, if not throws an exception with appropriate message
@@ -130,22 +137,62 @@ class excelWorkbook {
     }
     private function detectMergedCells(){
         //TODO: PRBO - FIXME: detectMergedCells checks the ENTIRE file, but should only be detecting with the dataset
-        $this->checkLoadWithException(__FUNCTION__);
+        //TODO: PRBO - FIXME: detectMergedCells needs to check the entire dataset, not just the preview
         $ryMerged = array();
-        foreach($this->_excelWorkbook->getAllSheets() as $sheet){
-            if($sheet->getMergeCells()){
-                $ryMerged[] = TRUE;
-            } else {
-                $ryMerged[] = FALSE;
-            }
+        foreach($this->_excelWorkbook->getAllSheets() as $sheetkey => $sheet){
+            $mergedCells = $sheet->getMergeCells();
+            if($mergedCells){
+                foreach($mergedCells as $mergedCell){
+                    $parsedCells = $this->parseMergedCellCoordinates($mergedCell);
+                    $col1int = $this->col2int($parsedCells["startColumn"]);
+                    $col2int = $this->col2int($parsedCells["stopColumn"]);
+                    //if the stop column is larger than the length of the rows
+                    //or if the 
+                    $ryMerged[] = $parsedCells; //break for debugger
+                }
+            } 
         }
         return $ryMerged;
     }
-    private function areCellsInDataset($mergedCelss){
-        $inDataset = FALSE;
-        //TODO: PRBO - areCellsInDataset - do this!!!!!!
-        //NOTE: I need the dataset before I can do this.
-        return $inDataset;
+    private function parseMergedCellCoordinates($cellCoordinates){
+       //split by colin
+       $ryReturn = array();
+       $ryStartStop = explode(":", $cellCoordinates);
+       $i=0;
+       $j=0;
+       while(!is_numeric($ryStartStop[0][$i])){
+           $i++;
+       }
+       while(!is_numeric($ryStartStop[0][$j])){
+           $j++;
+       }
+       $ryReturn["startColumn"] = substr($ryStartStop[0], 0, $i);
+       $ryReturn["startRow"] = substr($ryStartStop[0], $i);
+       $ryReturn["stopColumn"] = substr($ryStartStop[1], 0, $j);
+       $ryReturn["stopRow"] = substr($ryStartStop[1], $j);
+       return $ryReturn;
+    }
+    /**
+     * Takes a column and changes it to an int
+     * @param type $column
+     */
+    private function col2int($column){
+        //for each character, convert to an int and add it together
+        $ryInt = array();
+        for($i=0;$i<strlen($column);$i++){
+            $ryInt[] = (  ord($column[$i]) - 64  );
+        }
+        $ryInt = array_reverse($ryInt);
+        
+        $sum = 0;
+        for($i=0;$i<strlen($column);$i++){
+          if($i === 0){
+              $sum += $ryInt[$i];
+          } else {
+              $sum += (  $ryInt[$i] * pow(26, $i)  );
+          }
+        }
+        return $sum;
     }
     /**
      * Recurse through array elements and make all arrays integer index based
@@ -168,7 +215,6 @@ class excelWorkbook {
             //must already have sheet count for this to work
             for($i=0;$i<$this->sheetCount;$i++){
                 $this->columnHeadingIndices[] = $this->findColumnHeadingIndex($i);
-                //TODO: They must only be the length of consecutive data filled cells.
                 $columnHeadingRow = $this->_ryExcelWorksheets[$i][ ($this->columnHeadingIndices[$i]-1) ];  //column heading row of the current sheet, as an array of cells
                 $this->columnHeadingIndicesLength[] = $this->consecutiveDataCellCount($columnHeadingRow);  //the count of consecutively filled cells of data
             }
@@ -199,9 +245,6 @@ class excelWorkbook {
         $columnHeadingIndex = NULL;                                             //must already have an array of excel worksheets for this to work
         
         if($sheetIndex < $this->sheetCount){                                    //index must be within sheet count
-            //NOTES: PRBO - What is the best way to maintain the state of the column index between HTTP requests? Or should it just redectect every time?
-            //NOTES: Session var? This can be overrideen by the JSON object that is passed if the user changed is
-
             $ryDataFilledCellCounts = array();
 
             foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
