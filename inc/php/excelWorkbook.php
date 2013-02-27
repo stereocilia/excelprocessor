@@ -75,6 +75,17 @@ class excelWorkbook {
                 
             $this->checkLoadWithException(__FUNCTION__);                        //make sure something is loaded or everything will fail
             
+            
+            //Remove worksheets with less that two rows, they do not represent a dataset
+            $key = 0;
+            foreach($this->_excelWorkbook->getAllSheets() as $sheet){
+                if(  $sheet->getHighestRow() < 2  ){
+                    $this->_excelWorkbook->removeSheetByIndex($key);
+                } else {
+                    $key++;
+                }
+            }
+            
             $this->_sheetCount = $this->_excelWorkbook->getSheetCount();
             
             //make temporary array the represents all the sheets
@@ -244,7 +255,6 @@ class excelWorkbook {
             excelError::throwError( new Exception("Array length must be greater than zero") );
         }
     }
-    //SUGGEST: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
     /**
      * Tries to find the row containing the names for all the columns
      * @param int $sheetIndex Index of the sheet in the excelWorkbook member variable
@@ -254,17 +264,25 @@ class excelWorkbook {
         $columnHeadingIndex = NULL;                                             //must already have an array of excel worksheets for this to work
         
         if($sheetIndex < $this->_sheetCount){                                    //index must be within sheet count
-            $ryDataFilledCellCounts = array();
+            if(count($this->_ryExcelWorksheets[$sheetIndex])>=2){
+                $ryDataFilledCellCounts = array();
 
-            foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
-                $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);                              //get the count of consecutive data cells
+                foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
+                    $ryDataFilledCellCounts[] = $this->consecutiveDataCellCount($row);                              //get the count of consecutive data cells
+                }
+                //TODO: PRBO - error here when loading ODS file
+                $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);                         //find length of most common row
+
+                $columnHeadingIndex = ( (int)array_search($mostCommonRowLength, $ryDataFilledCellCounts) ) + 1;     //find the first occurance of that row, this is the index         
+
+                return $columnHeadingIndex;
+            } else {
+                excelError::throwError( 
+                        new Exception("Can not process a sheet with less than two rows. sheetIndex is $sheetIndex with a count of " . 
+                                        count($this->_ryExcelWorksheets[$sheetIndex])
+                        ) 
+                );
             }
-            //TODO: PRBO - error here when loading ODS file
-            $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);                         //find length of most common row
-            
-            $columnHeadingIndex = ( (int)array_search($mostCommonRowLength, $ryDataFilledCellCounts) ) + 1;     //find the first occurance of that row, this is the index         
-        
-            return $columnHeadingIndex;
         }  else {
             excelError::throwError(new Exception("Sheet index out of bounds. sheetIndex is $sheetIndex : sheetCount is " . $this->_sheetCount));
         } 

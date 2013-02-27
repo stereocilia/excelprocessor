@@ -1,0 +1,33 @@
+Name,Date,Time,IsMale,Age,HiddenStuff,Another Column
+"Bob
+Hi","Friday, August 03, 2012",1PM,TRUE,12,1,1
+Joe,"Friday, May 07, 2010",1:05:54,TRUE,15,2,2
+Mary,"Tuesday, April 07, 2009",3:05:00,FALSE,18,3,3
+Sue,"Sunday, October 03, 1999",12:21:56,FALSE,21,4,4
+Tom,"Wednesday, April 05, 2006",11:32:45,TRUE,25,5,5
+Jan,"Thursday, January 02, 2003",6:57:44,FALSE,30,6,6
+Gary,"Friday, March 04, 2005",23:45:21,TRUE,35,7,7
+Mary,"Sunday, May 06, 2007",13:24:22,FALSE,40,8,8
+Tim,"Wednesday, July 08, 2009",4:34,TRUE,50,9,9
+Joe,"Monday, August 09, 2010",15:06,TRUE,60,10,10
+Bob,"Friday, August 03, 2012",12:25:00,TRUE,12,11,11
+Joe,"Friday, May 07, 2010",1:05:54,TRUE,15,12,12
+Mary,"Tuesday, April 07, 2009",3:05:00,FALSE,18,13,13
+Sue,"Sunday, October 03, 1999",12:21:56,FALSE,21,14,14
+Tom,"Wednesday, April 05, 2006",11:32:45,TRUE,25,15,15
+Jan,"Thursday, January 02, 2003",6:57:44,FALSE,30,16,16
+Gary,"Friday, March 04, 2005",23:45:21,TRUE,35,17,17
+Mary,"Sunday, May 06, 2007",13:24:22,FALSE,40,18,18
+Tim,"Wednesday, July 08, 2009",4:34,TRUE,50,19,19
+Joe,"Monday, August 09, 2010",15:06,TRUE,60,20,20
+Bob,"Friday, August 03, 2012",12:25:00,TRUE,12,21,21
+Joe,"Friday, May 07, 2010",1:05:54,TRUE,15,22,22
+Mary,"Tuesday, April 07, 2009",3:05:00,FALSE,18,23,23
+Sue,"Sunday, October 03, 1999",12:21:56,FALSE,21,24,24
+Tom,"Wednesday, April 05, 2006",11:32:45,TRUE,25,25,25
+Jan,"Thursday, January 02, 2003",6:57:44,FALSE,30,26,26
+Gary,"Friday, March 04, 2005",23:45:21,TRUE,35,27,27
+Mary,"Sunday, May 06, 2007",13:24:22,FALSE,40,28,28
+Tim,"Wednesday, July 08, 2009",4:34,TRUE,50,29,29
+"Something
+Something else","Monday, August 09, 2010",15:06,TRUE,60,30,30
