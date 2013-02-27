@@ -46,6 +46,10 @@ class excelWorkbook {
      * @var array 
      */
     private $_hiddenColumnIndecies = array();
+    /**
+     * Indicates if the load function has been called
+     * @var boolean 
+     */
     private $_hasLoaded = false;
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
