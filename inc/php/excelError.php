@@ -3,6 +3,8 @@
 //TODO: PRBO - Make a class that inherits exception and have a function that converts it to JSON
 /**
  * Creates error objects that can be converted to JSON and passed to the handling webpage
+ * 
+ * Instantiating an object allows you to manipulate the error in the object before it is thrown. Using throwSelfAsJSON throws a JSON with extra properties that can be handled be the UI, such as the type of error. The static function throwError allows you to throw a JSON error in a single step; esp. useful when passing an Exception as the argument.
  *
  * @author Martin Magana <magana.web@gmail.com>
  */
@@ -79,18 +81,51 @@ class excelError {
     }
     
     public function throwSelfAsJSON(){
-        throw new Exception("<SELFTHROWN>" . json_encode($this->ryError));
+        throw self::makeJSONException($this->ryError);
     }
     
     static public function createJSONError($msg=""){
         $ryError[self::KEYERROR] = self::VALERROR;
-        $this->ryError[self::KEYTYPE] = self::VALTYPEGENERAL;
+        $ryError[self::KEYTYPE] = self::VALTYPEGENERAL;
         if( !empty($msg) ){
             $ryError[self::KEYERRORMSG] = $msg;
         } else {
             $ryError[self::KEYERRORMSG] = self::MSGDEFAULTERROR;
         }
         return $ryError;
+    }
+    /**
+     * Used to throw a generic error
+     * 
+     * This has the option of being passed an Exception which has specific information about the error that occured. This information is placed into an object that can be read as JSON and then thrown.
+     * 
+     * @param string|Exception $error Pass a string for a generic error with message or pass and Exception for a generic error with the Exception message, file, line, and trace attached.
+     * @throws Exception
+     */
+    static public function throwError($error = NULL){
+        $ryError[self::KEYERROR] = self::VALERROR;
+        $ryError[self::KEYTYPE] = self::VALTYPEGENERAL;        
+        if($error){                                                             //if not null
+            if(is_string($error)){                                              //if a string
+                if( !empty($msg) ){                                             //if string not empty
+                   $ryError[self::KEYERRORMSG] = $error;                        //set error message to passed string
+               } else {
+                   $ryError[self::KEYERRORMSG] = self::MSGDEFAULTERROR;         //use default error if empty string
+               }               
+            } elseif(get_class($error) === "Exception") {                       //if an Exception
+                $ryError[self::KEYERRORMSG] = $error->getMessage() . "<br>";    //add message
+                $ryError[self::KEYERRORMSG] .= "<b>File:</b> " . $error->getFile() . "<br>";      //add file
+                $ryError[self::KEYERRORMSG] .= "<b>Line:</b> " . $error->getLine() . "<br>";      //add line
+                $ryError[self::KEYERRORMSG] .= "<b>Trace:</b><br>" . nl2br( $error->getTraceAsString() ) . "<br>";    //add trace
+            } else {                                                            //not a string or exception
+                $ryError[self::KEYERRORMSG] = self::MSGDEFAULTERROR;            //use default error if empty string
+            }
+        }
+        throw self::makeJSONException($ryError);
+    }
+    
+    static private function makeJSONException(array $ryError){
+        return new Exception(self::SELFTHROWN . json_encode($ryError));
     }
 }
 

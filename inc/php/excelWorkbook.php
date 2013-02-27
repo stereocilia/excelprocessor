@@ -60,8 +60,7 @@ class excelWorkbook {
             $this->_hasLoaded = TRUE;
             $this->excelWorkbookChanged();
         } else {
-            $e = new excelError();
-            $e->loadExceptionAndThrowAsJSON( new Exception("load function called with no excelWorkbook object available.") );
+            excelError::throwError( new Exception("load() function called with no excelWorkbook object available.") );
         }
         
     }
@@ -69,8 +68,8 @@ class excelWorkbook {
      * Call after the workbook has been modified in someway and you want to rebuild the data of the class. Basically refreshed the entire object.
      */
     private function excelWorkbookChanged(){
-            
-            $this->checkLoadWithException(__FUNCTION__);
+                
+            $this->checkLoadWithException(__FUNCTION__);                        //make sure something is loaded or everything will fail
             
             $this->sheetCount = $this->_excelWorkbook->getSheetCount();
             
@@ -202,19 +201,14 @@ class excelWorkbook {
      * @param array $ry
      * @return array
      */
-    private function makePlainArray($ry){
-        if(is_array($ry)){
-            foreach($ry as &$element){
-                if(is_array($element)){
-                    $element = $this->makePlainArray($element);
-                }
+    private function makePlainArray(array $ry){
+        foreach($ry as &$element){
+            if(is_array($element)){
+                $element = $this->makePlainArray($element);
             }
-            $ry = array_values($ry);
-            return $ry;
-        } else {
-            $e = new excelError();
-            $e->loadExceptionAndThrowAsJSON( new Exception("makePlainArray passed argument that is not an array") );
         }
+        $ry = array_values($ry);
+        return $ry;
     }
     /**
      * Find the indices of all column heading rows for all sheets in _ryExcelWorksheets member variable
@@ -231,17 +225,20 @@ class excelWorkbook {
      * Finds the count of cells in a row that are consecutively filled with data (not empty or null)
      * @param array $row
      */
-    private function consecutiveDataCellCount($row){
-        //skips verifying if $row is an array for a little extra speed
-        $count = 0;   
-        foreach ($row as $cell){                                        //go through each cell
-            if(  $cell === null  ){
-               return $count;
-           } else {
-               $count++;                                  //if the cell is not empty, count it
-           }
+    private function consecutiveDataCellCount(array $row){
+        if($row){
+            $count = 0;   
+            foreach ($row as $cell){                                        //go through each cell
+                if(  $cell === null  ){
+                   return $count;
+               } else {
+                   $count++;                                  //if the cell is not empty, count it
+               }
+            }
+            return $count;
+        } else {
+            excelError::throwError( new Exception("Array length must be greater than zero") );
         }
-        return $count;
     }
     //SUGGEST: PRBO - findColumnHeadingIndex - Should I be passing the sheet index or the sheet itself?
     /**
@@ -262,8 +259,12 @@ class excelWorkbook {
             $mostCommonRowLength = $this->mostCommonRowLength($ryDataFilledCellCounts);                         //find length of most common row
             
             $columnHeadingIndex = ( (int)array_search($mostCommonRowLength, $ryDataFilledCellCounts) ) + 1;     //find the first occurance of that row, this is the index         
-        }   
-        return $columnHeadingIndex;
+        
+            return $columnHeadingIndex;
+        }  else {
+            excelError::throwError(new Exception("Sheet index out of bounds. sheetIndex is $sheetIndex : sheetCount is " . $this->sheetCount));
+        } 
+        
     }
     /**
      * Find the index of the row that is considered to be the last of the dataset for all sheets
@@ -293,8 +294,11 @@ class excelWorkbook {
             if($lastRow === NULL){   //set to last row if null
                 $lastRow = ( count($sheet) );
             }
+            return $lastRow;
+        } else {
+            excelError::throwError(new Exception("Sheet index out of bounds. sheetIndex is $sheetIndex : sheetCount is " . $this->sheetCount));
         }
-        return $lastRow;
+        
     }
     /**
      * Creates an array that represents the Excel Worksheet. This array can be encoded to a JSON object
@@ -412,27 +416,27 @@ class excelWorkbook {
     }
     /**
      * Removes rows that have a data type of null for every cell
-     * @param array $ryExcelWorksheet
+     * @param array $sheet
      * @return array
      */
-    public function removeNullRows($ryExcelWorksheet){
+    public function removeNullRows(array $sheet){
         $startIndex = 0;
-        if($ryExcelWorksheet){
+        if($sheet){
             $ryExcelSheetTemp = array();
-            for($i=$startIndex;$i<count($ryExcelWorksheet);$i++){
-                if($ryExcelWorksheet[$i][0] == null){  //if the first cell is null, check each each cell
+            for($i=$startIndex;$i<count($sheet);$i++){
+                if($sheet[$i][0] == null){  //if the first cell is null, check each each cell
                     $isAllNull = TRUE;  //assume all of the cells are null unless one is found with data
                     
-                    foreach($ryExcelWorksheet[$i] as $cell){       //now find a cell that does not have null
+                    foreach($sheet[$i] as $cell){       //now find a cell that does not have null
                         if($cell != null){
                             $isAllNull = FALSE;
                         }
                     }
                     if(!$isAllNull){ //this row shall be kept because a cell was found that was not null
-                        $ryExcelSheetTemp[] = $ryExcelWorksheet[$i];
+                        $ryExcelSheetTemp[] = $sheet[$i];
                     }
                 } else {
-                   $ryExcelSheetTemp[] = $ryExcelWorksheet[$i];  //this row should be kept because it the first cell was not null
+                   $ryExcelSheetTemp[] = $sheet[$i];  //this row should be kept because it the first cell was not null
                 }
             }
             return $ryExcelSheetTemp;
@@ -455,7 +459,7 @@ class excelWorkbook {
     /**
      * Removes the columns of all sheets in excelWorkbook that are marked as hidden
      */
-    private function removeHiddenColumns($sheets){
+    private function removeHiddenColumns(array $sheets){
         $this->findHiddenColumns();
         for($i=0;$i<count($sheets);$i++){
             for($j=0;$j<count($this->_hiddenColumnIndecies[$i]);$j++){
@@ -468,36 +472,40 @@ class excelWorkbook {
     }
     /**
      * Rebuilds an array without data that is longer than the column heading row, then returns the new array
-     * @param array $ryExcelWorksheet The worksheet (as an array) that will be rebuilt
+     * @param array $sheet The worksheet (as an array) that will be rebuilt
      * @param integer $bounds The amount of cells that each new row will have
      * @return array The array without columns exceeding the given length
      */
-    private function removeColumnsBeyondBounds($ryExcelWorksheet, $bounds){
-        $ryReturn = array();
-        foreach($ryExcelWorksheet as $row){
-            $ryRow = array();
-            for($i=0;$i<$bounds;$i++){
-                $ryRow[] = $row[$i];
+    private function removeColumnsBeyondBounds(array $sheet, $bounds){
+        if($sheet){
+            $ryReturn = array();
+            foreach($sheet as $row){
+                $ryRow = array();
+                for($i=0;$i<$bounds;$i++){
+                    $ryRow[] = $row[$i];
+                }
+                $ryReturn[] = $ryRow;
             }
-            $ryReturn[] = $ryRow;
+            return $ryReturn;
+        } else {
+            excelError::throwError(new Exception("Array length must be greater than zero"));
         }
-        return $ryReturn;
     }
     /**
      * Find the length of the most commonly occuring row
      * @param array $worksheet Excel worksheet as array
      * @return int The length of the most commonly occuring row
      */
-    private function mostCommonRowLength($worksheet){
-        if( is_array($worksheet) ){                                             //make sure this is an array
-            $worksheet = array_count_values($worksheet);                        //get total count of each key in array
-            arsort($worksheet, SORT_NUMERIC);                                   //reverse sort, keep keys
-            while(  (int)key($worksheet) < 2  ){                                //if this item is less than two rows
-                next($worksheet);                                               //get the next item, this is not the column heading index
+    private function mostCommonRowLength(array $sheet){
+        if($sheet){
+            $sheet = array_count_values($sheet);                        //get total count of each key in array
+            arsort($sheet, SORT_NUMERIC);                                   //reverse sort, keep keys
+            while(  (int)key($sheet) < 2  ){                                //if this item is less than two rows
+                next($sheet);                                               //get the next item, this is not the column heading index
             }
-            return (int)key($worksheet);                                        //return, force to int
+            return (int)key($sheet);                                        //return, force to int
         } else {
-            return 0;   //TODO: PRBO - throw error here
+            excelError::throwError(new Exception("Array length must be greater than zero"));
         }
     }
 }

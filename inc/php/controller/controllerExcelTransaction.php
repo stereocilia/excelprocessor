@@ -128,7 +128,7 @@ class handleCommitExcelRequest extends handleRequestAbstract implements IHandleR
         //make a changes needed
         //commit the changes
         if($loader->commit($workbook)===0){                                     //just for the stub out, this will change
-           return excelError::createJSONError("Commit functionality not yet created"); 
+           return json_encode(  excelError::createJSONError("Commit functionality not yet created")  ); 
         }
     }
 }
