@@ -22,7 +22,7 @@
  * @package    PHPExcel_Writer_Excel5
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 // Original file header of PEAR::Spreadsheet_Excel_Writer_Workbook (used as the base for this class):
@@ -317,6 +317,7 @@ class PHPExcel_Writer_Excel5_Workbook extends PHPExcel_Writer_Excel5_BIFFwriter
 		}
 		return $fontIndex;
 	}
+
 	/**
 	 * Alter color palette adding a custom color
 	 *
@@ -629,7 +630,7 @@ class PHPExcel_Writer_Excel5_Workbook extends PHPExcel_Writer_Excel5_BIFFwriter
 					$rowmax = $repeat[1] - 1;
 				} else {
 					$rowmin = 0;
-					$rowmax = 16383;
+					$rowmax = 65535;
 				}
 
 				$this->_writeNameShort(
@@ -687,7 +688,7 @@ class PHPExcel_Writer_Excel5_Workbook extends PHPExcel_Writer_Excel5_BIFFwriter
 					}
 					$chunk .= $this->writeData($this->_writeDefinedNameBiff8($namedRange->getName(), $formulaData, $scope, false));
 
-				} catch(Exception $e) {
+				} catch(PHPExcel_Exception $e) {
 					// do nothing
 				}
 			}
@@ -1446,5 +1447,4 @@ class PHPExcel_Writer_Excel5_Workbook extends PHPExcel_Writer_Excel5_BIFFwriter
 	{
 		$this->_escher = $pValue;
 	}
-
 }

@@ -22,7 +22,7 @@
  * @package    PHPExcel_Style
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -238,7 +238,7 @@ class PHPExcel_Style_Conditional implements PHPExcel_IComparable
      * Set Style
      *
      * @param 	PHPExcel_Style $pValue
-     * @throws 	Exception
+     * @throws 	PHPExcel_Exception
      * @return PHPExcel_Style_Conditional
      */
     public function setStyle(PHPExcel_Style $pValue = null) {

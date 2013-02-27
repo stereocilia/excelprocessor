@@ -22,7 +22,7 @@
  * @package		PHPExcel_Calculation
  * @copyright	Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license		http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version		1.7.8, 2012-10-12
+ * @version		##VERSION##, ##DATE##
  */
 
 
@@ -440,11 +440,7 @@ class PHPExcel_Calculation_TextData {
 			$mixedCaseString = ($mixedCaseString) ? PHPExcel_Calculation::getTRUE() : PHPExcel_Calculation::getFALSE();
 		}
 
-		if (function_exists('mb_convert_case')) {
-			return mb_convert_case($mixedCaseString, MB_CASE_LOWER, 'UTF-8');
-		} else {
-			return strtoupper($mixedCaseString);
-		}
+		return PHPExcel_Shared_String::StrToLower($mixedCaseString);
 	}	//	function LOWERCASE()
 
 
@@ -463,11 +459,7 @@ class PHPExcel_Calculation_TextData {
 			$mixedCaseString = ($mixedCaseString) ? PHPExcel_Calculation::getTRUE() : PHPExcel_Calculation::getFALSE();
 		}
 
-		if (function_exists('mb_convert_case')) {
-			return mb_convert_case($mixedCaseString, MB_CASE_UPPER, 'UTF-8');
-		} else {
-			return strtoupper($mixedCaseString);
-		}
+		return PHPExcel_Shared_String::StrToUpper($mixedCaseString);
 	}	//	function UPPERCASE()
 
 
@@ -486,11 +478,7 @@ class PHPExcel_Calculation_TextData {
 			$mixedCaseString = ($mixedCaseString) ? PHPExcel_Calculation::getTRUE() : PHPExcel_Calculation::getFALSE();
 		}
 
-		if (function_exists('mb_convert_case')) {
-			return mb_convert_case($mixedCaseString, MB_CASE_TITLE, 'UTF-8');
-		} else {
-			return ucwords($mixedCaseString);
-		}
+		return PHPExcel_Shared_String::StrToTitle($mixedCaseString);
 	}	//	function PROPERCASE()
 
 

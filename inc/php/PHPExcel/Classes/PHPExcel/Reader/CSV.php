@@ -22,7 +22,7 @@
  * @package    PHPExcel_Reader
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -42,7 +42,7 @@ if (!defined('PHPEXCEL_ROOT')) {
  * @package    PHPExcel_Reader
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
-class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
+class PHPExcel_Reader_CSV extends PHPExcel_Reader_Abstract implements PHPExcel_Reader_IReader
 {
 	/**
 	 * Input encoding
@@ -102,15 +102,6 @@ class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
 	private $_contiguousRow	= -1;
 
 	/**
-	 * PHPExcel_Reader_IReadFilter instance
-	 *
-	 * @access	private
-	 * @var	PHPExcel_Reader_IReadFilter
-	 */
-	private $_readFilter = null;
-
-
-	/**
 	 * Create a new PHPExcel_Reader_CSV
 	 */
 	public function __construct() {
@@ -124,40 +115,17 @@ class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
 	 * @access	public
 	 * @param 	string 		$pFileName
 	 * @return boolean
-	 * @throws Exception
+	 * @throws PHPExcel_Reader_Exception
 	 */
 	public function canRead($pFilename)
 	{
 		// Check if file exists
 		if (!file_exists($pFilename)) {
-			throw new Exception("Could not open " . $pFilename . " for reading! File does not exist.");
+			throw new PHPExcel_Reader_Exception("Could not open " . $pFilename . " for reading! File does not exist.");
 		}
 
 		return true;
 	}	//	function canRead()
-
-
-	/**
-	 * Read filter
-	 *
-	 * @access	public
-	 * @return PHPExcel_Reader_IReadFilter
-	 */
-	public function getReadFilter() {
-		return $this->_readFilter;
-	}	//	function getReadFilter()
-
-
-	/**
-	 * Set read filter
-	 *
-	 * @access	public
-	 * @param	PHPExcel_Reader_IReadFilter $pValue
-	 */
-	public function setReadFilter(PHPExcel_Reader_IReadFilter $pValue) {
-		$this->_readFilter = $pValue;
-		return $this;
-	}	//	function setReadFilter()
 
 
 	/**
@@ -190,19 +158,19 @@ class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
 	 *
 	 * @access	public
 	 * @param 	string 		$pFilename
-	 * @throws	Exception
+	 * @throws	PHPExcel_Reader_Exception
 	 */
 	public function listWorksheetInfo($pFilename)
 	{
 		// Check if file exists
 		if (!file_exists($pFilename)) {
-			throw new Exception("Could not open " . $pFilename . " for reading! File does not exist.");
+			throw new PHPExcel_Reader_Exception("Could not open " . $pFilename . " for reading! File does not exist.");
 		}
 
 		// Open file
 		$fileHandle = fopen($pFilename, 'r');
 		if ($fileHandle === false) {
-			throw new Exception("Could not open file " . $pFilename . " for reading.");
+			throw new PHPExcel_Reader_Exception("Could not open file " . $pFilename . " for reading.");
 		}
 
 		// Skip BOM, if any
@@ -262,7 +230,7 @@ class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
 	 * @access	public
 	 * @param 	string 		$pFilename
 	 * @return PHPExcel
-	 * @throws Exception
+	 * @throws PHPExcel_Reader_Exception
 	 */
 	public function load($pFilename)
 	{
@@ -281,13 +249,13 @@ class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
 	 * @param 	string 		$pFilename
 	 * @param	PHPExcel	$objPHPExcel
 	 * @return 	PHPExcel
-	 * @throws 	Exception
+	 * @throws 	PHPExcel_Reader_Exception
 	 */
 	public function loadIntoExisting($pFilename, PHPExcel $objPHPExcel)
 	{
 		// Check if file exists
 		if (!file_exists($pFilename)) {
-			throw new Exception("Could not open " . $pFilename . " for reading! File does not exist.");
+			throw new PHPExcel_Reader_Exception("Could not open " . $pFilename . " for reading! File does not exist.");
 		}
 
 		// Create new PHPExcel
@@ -302,7 +270,7 @@ class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
 		// Open file
 		$fileHandle = fopen($pFilename, 'r');
 		if ($fileHandle === false) {
-			throw new Exception("Could not open file $pFilename for reading.");
+			throw new PHPExcel_Reader_Exception("Could not open file $pFilename for reading.");
 		}
 
 		// Skip BOM, if any

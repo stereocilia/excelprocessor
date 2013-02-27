@@ -22,7 +22,7 @@
  * @package		PHPExcel_Chart
  * @copyright	Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license		http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version		1.7.8, 2012-10-12
+ * @version		##VERSION##, ##DATE##
  */
 
 
@@ -110,7 +110,7 @@ class PHPExcel_Chart_PlotArea
 	/**
 	 * Set Plot Series
 	 *
-	 * @param array of PHPExcel_Chart_DataSeries
+	 * @param [PHPExcel_Chart_DataSeries]
 	 */
 	public function setPlotSeries($plotSeries = array()) {
 		$this->_plotSeries = $plotSeries;

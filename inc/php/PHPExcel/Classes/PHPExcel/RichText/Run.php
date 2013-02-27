@@ -20,7 +20,7 @@
  * @package    PHPExcel_RichText
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -65,7 +65,7 @@ class PHPExcel_RichText_Run extends PHPExcel_RichText_TextElement implements PHP
 	 * Set font
 	 *
 	 * @param	PHPExcel_Style_Font		$pFont		Font
-	 * @throws 	Exception
+	 * @throws 	PHPExcel_Exception
 	 * @return PHPExcel_RichText_ITextElement
 	 */
 	public function setFont(PHPExcel_Style_Font $pFont = null) {

@@ -22,7 +22,7 @@
  * @package    PHPExcel_Calculation
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -74,7 +74,7 @@ class PHPExcel_Calculation_Function {
      * @param 	string		$pCategory 		Category (represented by CATEGORY_*)
      * @param 	string		$pExcelName		Excel function name
      * @param 	string		$pPHPExcelName	PHPExcel function mapping
-     * @throws 	Exception
+     * @throws 	PHPExcel_Calculation_Exception
      */
     public function __construct($pCategory = NULL, $pExcelName = NULL, $pPHPExcelName = NULL)
     {
@@ -84,7 +84,7 @@ class PHPExcel_Calculation_Function {
     		$this->_excelName 		= $pExcelName;
     		$this->_phpExcelName 	= $pPHPExcelName;
     	} else {
-    		throw new Exception("Invalid parameters passed.");
+    		throw new PHPExcel_Calculation_Exception("Invalid parameters passed.");
     	}
     }
 
@@ -101,13 +101,13 @@ class PHPExcel_Calculation_Function {
      * Set Category (represented by CATEGORY_*)
      *
      * @param 	string		$value
-     * @throws 	Exception
+     * @throws 	PHPExcel_Calculation_Exception
      */
     public function setCategory($value = null) {
     	if (!is_null($value)) {
     		$this->_category = $value;
     	} else {
-    		throw new Exception("Invalid parameter passed.");
+    		throw new PHPExcel_Calculation_Exception("Invalid parameter passed.");
     	}
     }
 

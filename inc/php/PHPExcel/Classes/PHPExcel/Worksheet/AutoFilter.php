@@ -22,7 +22,7 @@
  * @package    PHPExcel_Worksheet
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -826,20 +826,20 @@ class PHPExcel_Worksheet_AutoFilter
 			if (is_object($value)) {
 				if ($key == '_workSheet') {
 					//	Detach from worksheet
-					$this->$key = NULL;
+					$this->{$key} = NULL;
 				} else {
-					$this->$key = clone $value;
+					$this->{$key} = clone $value;
 				}
 			} elseif ((is_array($value)) && ($key == '_columns')) {
 				//	The columns array of PHPExcel_Worksheet_AutoFilter objects
-				$this->$key = array();
+				$this->{$key} = array();
 				foreach ($value as $k => $v) {
-					$this->$key[$k] = clone $v;
+					$this->{$key}[$k] = clone $v;
 					// attach the new cloned Column to this new cloned Autofilter object
-					$this->$key[$k]->setParent($this);
+					$this->{$key}[$k]->setParent($this);
 				}
 			} else {
-				$this->$key = $value;
+				$this->{$key} = $value;
 			}
 		}
 	}

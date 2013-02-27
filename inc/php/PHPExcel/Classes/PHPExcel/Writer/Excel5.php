@@ -22,7 +22,7 @@
  * @package    PHPExcel_Writer_Excel5
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license	http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version	1.7.8, 2012-10-12
+ * @version	##VERSION##, ##DATE##
  */
 
 
@@ -33,15 +33,8 @@
  * @package    PHPExcel_Writer_Excel5
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
-class PHPExcel_Writer_Excel5 implements PHPExcel_Writer_IWriter
+class PHPExcel_Writer_Excel5 extends PHPExcel_Writer_Abstract implements PHPExcel_Writer_IWriter
 {
-	/**
-	 * Pre-calculate formulas
-	 *
-	 * @var boolean
-	 */
-	private $_preCalculateFormulas	= true;
-
 	/**
 	 * PHPExcel object
 	 *
@@ -120,7 +113,7 @@ class PHPExcel_Writer_Excel5 implements PHPExcel_Writer_IWriter
 	 * Save PHPExcel to file
 	 *
 	 * @param	string		$pFilename
-	 * @throws	Exception
+	 * @throws	PHPExcel_Writer_Exception
 	 */
 	public function save($pFilename = null) {
 
@@ -196,7 +189,7 @@ class PHPExcel_Writer_Excel5 implements PHPExcel_Writer_IWriter
 		}
 
 		// add binary data for global workbook stream
-		$OLE->append( $this->_writerWorkbook->writeWorkbook($worksheetSizes) );
+		$OLE->append($this->_writerWorkbook->writeWorkbook($worksheetSizes));
 
 		// add binary data for sheet streams
 		for ($i = 0; $i < $countSheets; ++$i) {
@@ -241,29 +234,11 @@ class PHPExcel_Writer_Excel5 implements PHPExcel_Writer_IWriter
 	 *
 	 * @deprecated
 	 * @param	string	$pValue		Temporary storage directory
-	 * @throws	Exception	Exception when directory does not exist
+	 * @throws	PHPExcel_Writer_Exception	when directory does not exist
 	 * @return PHPExcel_Writer_Excel5
 	 */
 	public function setTempDir($pValue = '') {
 		return $this;
-	}
-
-	/**
-	 * Get Pre-Calculate Formulas
-	 *
-	 * @return boolean
-	 */
-	public function getPreCalculateFormulas() {
-		return $this->_preCalculateFormulas;
-	}
-
-	/**
-	 * Set Pre-Calculate Formulas
-	 *
-	 * @param boolean $pValue	Pre-Calculate Formulas?
-	 */
-	public function setPreCalculateFormulas($pValue = true) {
-		$this->_preCalculateFormulas = $pValue;
 	}
 
 	/**

@@ -22,7 +22,7 @@
  * @package    PHPExcel_Worksheet
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -195,12 +195,12 @@ class PHPExcel_Worksheet_RowDimension
      * Value must be between 0 and 7
      *
      * @param int $pValue
-     * @throws Exception
+     * @throws PHPExcel_Exception
      * @return PHPExcel_Worksheet_RowDimension
      */
     public function setOutlineLevel($pValue) {
     	if ($pValue < 0 || $pValue > 7) {
-    		throw new Exception("Outline level must range between 0 and 7.");
+    		throw new PHPExcel_Exception("Outline level must range between 0 and 7.");
     	}
 
     	$this->_outlineLevel = $pValue;

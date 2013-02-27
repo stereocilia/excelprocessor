@@ -22,7 +22,7 @@
  * @package    PHPExcel_CachedObjectStorage
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -40,9 +40,9 @@ class PHPExcel_CachedObjectStorage_Igbinary extends PHPExcel_CachedObjectStorage
      *     and the 'nullify' the current cell object
      *
 	 * @return	void
-     * @throws	Exception
+     * @throws	PHPExcel_Exception
      */
-	private function _storeData() {
+	protected function _storeData() {
 		if ($this->_currentCellIsDirty) {
 			$this->_currentObject->detach();
 
@@ -59,7 +59,7 @@ class PHPExcel_CachedObjectStorage_Igbinary extends PHPExcel_CachedObjectStorage
      * @param	string			$pCoord		Coordinate address of the cell to update
      * @param	PHPExcel_Cell	$cell		Cell to update
 	 * @return	void
-     * @throws	Exception
+     * @throws	PHPExcel_Exception
      */
 	public function addCacheData($pCoord, PHPExcel_Cell $cell) {
 		if (($pCoord !== $this->_currentObjectID) && ($this->_currentObjectID !== null)) {
@@ -78,7 +78,7 @@ class PHPExcel_CachedObjectStorage_Igbinary extends PHPExcel_CachedObjectStorage
      * Get cell at a specific coordinate
      *
      * @param 	string 			$pCoord		Coordinate of the cell
-     * @throws 	Exception
+     * @throws 	PHPExcel_Exception
      * @return 	PHPExcel_Cell 	Cell that was found, or null if not found
      */
 	public function getCacheData($pCoord) {
@@ -102,6 +102,20 @@ class PHPExcel_CachedObjectStorage_Igbinary extends PHPExcel_CachedObjectStorage
 		//	Return requested entry
 		return $this->_currentObject;
 	}	//	function getCacheData()
+
+
+	/**
+	 * Get a list of all cell addresses currently held in cache
+	 *
+	 * @return  array of string
+	 */
+	public function getCellList() {
+		if ($this->_currentObjectID !== null) {
+			$this->_storeData();
+		}
+
+		return parent::getCellList();
+	}
 
 
 	/**

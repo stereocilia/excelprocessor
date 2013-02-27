@@ -22,7 +22,7 @@
  * @package    PHPExcel_Shared_ZipArchive
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 if (!defined('PCLZIP_TEMPORARY_DIR')) {
@@ -105,7 +105,7 @@ class PHPExcel_Shared_ZipArchive
 								PCLZIP_OPT_ADD_PATH, $filenameParts["dirname"]
 							   );
 		if ($res == 0) {
-			throw new Exception("Error zipping files : " . $this->_zip->errorInfo(true));
+			throw new PHPExcel_Writer_Exception("Error zipping files : " . $this->_zip->errorInfo(true));
 		}
 
 		unlink($this->_tempDir.'/'.$filenameParts["basename"]);

@@ -22,7 +22,7 @@
  * @package    PHPExcel_Shared
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -434,7 +434,6 @@ class PHPExcel_Shared_String
 	{
 		// character count
 		$ln = self::CountCharacters($value, 'UTF-8');
-
 		// option flags
 		if(empty($arrcRuns)){
 			$opt = (self::getIsIconvEnabled() || self::getIsMbstringEnabled()) ?
@@ -444,10 +443,10 @@ class PHPExcel_Shared_String
 			$data .= self::ConvertEncoding($value, 'UTF-16LE', 'UTF-8');
 		}
 		else {
-			$data = pack('vC', $ln, 0x08);
+			$data = pack('vC', $ln, 0x09);
 			$data .= pack('v', count($arrcRuns));
 			// characters
-			$data .= $value;
+			$data .= self::ConvertEncoding($value, 'UTF-16LE', 'UTF-8');
 			foreach ($arrcRuns as $cRun){
 				$data .= pack('v', $cRun['strlen']);
 				$data .= pack('v', $cRun['fontidx']);
@@ -493,14 +492,13 @@ class PHPExcel_Shared_String
 	public static function ConvertEncoding($value, $to, $from)
 	{
 		if (self::getIsIconvEnabled()) {
-			$value = iconv($from, $to, $value);
-			return $value;
+			return iconv($from, $to, $value);
 		}
 
 		if (self::getIsMbstringEnabled()) {
-			$value = mb_convert_encoding($value, $to, $from);
-			return $value;
+			return mb_convert_encoding($value, $to, $from);
 		}
+
 		if($from == 'UTF-16LE'){
 			return self::utf16_decode($value, false);
 		}else if($from == 'UTF-16BE'){
@@ -584,6 +582,48 @@ class PHPExcel_Shared_String
 		return substr($pValue, $pStart, $pLength);
 	}
 
+	/**
+	 * Convert a UTF-8 encoded string to upper case
+	 *
+	 * @param string $pValue UTF-8 encoded string
+	 * @return string
+	 */
+	public static function StrToUpper($pValue = '')
+	{
+		if (function_exists('mb_convert_case')) {
+			return mb_convert_case($pValue, MB_CASE_UPPER, "UTF-8");
+		}
+		return strtoupper($pValue);
+	}
+
+	/**
+	 * Convert a UTF-8 encoded string to lower case
+	 *
+	 * @param string $pValue UTF-8 encoded string
+	 * @return string
+	 */
+	public static function StrToLower($pValue = '')
+	{
+		if (function_exists('mb_convert_case')) {
+			return mb_convert_case($pValue, MB_CASE_LOWER, "UTF-8");
+		}
+		return strtolower($pValue);
+	}
+
+	/**
+	 * Convert a UTF-8 encoded string to title/proper case
+	 *    (uppercase every first character in each word, lower case all other characters)
+	 *
+	 * @param string $pValue UTF-8 encoded string
+	 * @return string
+	 */
+	public static function StrToTitle($pValue = '')
+	{
+		if (function_exists('mb_convert_case')) {
+			return mb_convert_case($pValue, MB_CASE_TITLE, "UTF-8");
+		}
+		return ucwords($pValue);
+	}
 
 	/**
 	 * Identify whether a string contains a fractional numeric value,

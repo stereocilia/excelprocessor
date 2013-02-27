@@ -22,7 +22,7 @@
  *	@package	PHPExcel_Cell
  *	@copyright	Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  *	@license	http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- *	@version	1.7.8, 2012-10-12
+ *	@version	##VERSION##, ##DATE##
  */
 
 
@@ -51,18 +51,11 @@ class PHPExcel_Cell
 	private static $_valueBinder = NULL;
 
 	/**
-	 *	Column of the cell
+	 *	Cell Address (e.g. A1)
 	 *
 	 *	@var	string
 	 */
-	private $_column;
-
-	/**
-	 *	Row of the cell
-	 *
-	 *	@var	int
-	 */
-	private $_row;
+	private $_coordinate;
 
 	/**
 	 *	Value of the cell
@@ -140,11 +133,10 @@ class PHPExcel_Cell
 	 *	@param	PHPExcel_Worksheet	$pSheet
 	 *	@throws	PHPExcel_Exception
 	 */
-	public function __construct($pColumn = 'A', $pRow = 1, $pValue = NULL, $pDataType = NULL, PHPExcel_Worksheet $pSheet = NULL)
+	public function __construct($pCoordinate = 'A1', $pValue = NULL, $pDataType = NULL, PHPExcel_Worksheet $pSheet = NULL)
 	{
 		// Initialise cell coordinate
-		$this->_column = strtoupper($pColumn);
-		$this->_row = $pRow;
+		$this->_coordinate = strtoupper($pCoordinate);
 
 		// Initialise cell value
 		$this->_value = $pValue;
@@ -174,7 +166,8 @@ class PHPExcel_Cell
 	 */
 	public function getColumn()
 	{
-		return $this->_column;
+		list($column) = sscanf($this->_coordinate, '%[A-Z]%d');
+		return $column;
 	}
 
 	/**
@@ -184,7 +177,8 @@ class PHPExcel_Cell
 	 */
 	public function getRow()
 	{
-		return $this->_row;
+		list(,$row) = sscanf($this->_coordinate, '%[A-Z]%d');
+		return $row;
 	}
 
 	/**
@@ -194,7 +188,7 @@ class PHPExcel_Cell
 	 */
 	public function getCoordinate()
 	{
-		return $this->_column . $this->_row;
+		return $this->_coordinate;
 	}
 
 	/**
@@ -296,7 +290,7 @@ class PHPExcel_Cell
 //				echo 'Cell value for '.$this->getCoordinate().' is a formula: Calculating value<br />';
 				$result = PHPExcel_Calculation::getInstance()->calculateCellValue($this,$resetLog);
 //				echo $this->getCoordinate().' calculation result is '.$result.'<br />';
-			} catch ( Exception $ex ) {
+			} catch ( PHPExcel_Exception $ex ) {
 				if (($ex->getMessage() === 'Unable to access External Workbook') && ($this->_calculatedValue !== NULL)) {
 //					echo 'Returning fallback value of '.$this->_calculatedValue.' for cell '.$this->getCoordinate().'<br />';
 					return $this->_calculatedValue; // Fallback for calculations referencing external files.
@@ -304,7 +298,7 @@ class PHPExcel_Cell
 //				echo 'Calculation Exception: '.$ex->getMessage().'<br />';
 				$result = '#N/A';
 				throw(
-					new PHPExcel_Exception(
+					new PHPExcel_Calculation_Exception(
 						$this->getParent()->getTitle().'!'.$this->getCoordinate().' -> '.$ex->getMessage()
 					)
 				);
@@ -727,7 +721,6 @@ class PHPExcel_Cell
 	 *
 	 *	@param	string $pString
 	 *	@return	int Column index (base 1 !!!)
-	 *	@throws	Exception
 	 */
 	public static function columnIndexFromString($pString = 'A')
 	{
@@ -894,11 +887,11 @@ class PHPExcel_Cell
 	 * Set value binder to use
 	 *
 	 * @param PHPExcel_Cell_IValueBinder $binder
-	 * @throws Exception
+	 * @throws PHPExcel_Exception
 	 */
 	public static function setValueBinder(PHPExcel_Cell_IValueBinder $binder = NULL) {
 		if ($binder === NULL) {
-			throw new Exception("A PHPExcel_Cell_IValueBinder is required for PHPExcel to function correctly.");
+			throw new PHPExcel_Exception("A PHPExcel_Cell_IValueBinder is required for PHPExcel to function correctly.");
 		}
 
 		self::$_valueBinder = $binder;

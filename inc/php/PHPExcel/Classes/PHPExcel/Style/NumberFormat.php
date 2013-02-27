@@ -22,7 +22,7 @@
  * @package	PHPExcel_Style
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license	http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version	1.7.8, 2012-10-12
+ * @version	##VERSION##, ##DATE##
  */
 
 
@@ -33,7 +33,7 @@
  * @package	PHPExcel_Style
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
-class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
+class PHPExcel_Style_NumberFormat extends PHPExcel_Style_Supervisor implements PHPExcel_IComparable
 {
 	/* Pre-defined formats */
 	const FORMAT_GENERAL					= 'General';
@@ -80,49 +80,28 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 	 *
 	 * @var array
 	 */
-	private static $_builtInFormats;
+	protected static $_builtInFormats;
 
 	/**
 	 * Excel built-in number formats (flipped, for faster lookups)
 	 *
 	 * @var array
 	 */
-	private static $_flippedBuiltInFormats;
+	protected static $_flippedBuiltInFormats;
 
 	/**
 	 * Format Code
 	 *
 	 * @var string
 	 */
-	private $_formatCode	=	PHPExcel_Style_NumberFormat::FORMAT_GENERAL;
+	protected $_formatCode	=	PHPExcel_Style_NumberFormat::FORMAT_GENERAL;
 
 	/**
 	 * Built-in format Code
 	 *
 	 * @var string
 	 */
-	private $_builtInFormatCode	= 0;
-
-	/**
-	 * Parent Borders
-	 *
-	 * @var _parentPropertyName string
-	 */
-	private $_parentPropertyName;
-
-	/**
-	 * Supervisor?
-	 *
-	 * @var boolean
-	 */
-	private $_isSupervisor;
-
-	/**
-	 * Parent. Only used for supervisor
-	 *
-	 * @var PHPExcel_Style
-	 */
-	private $_parent;
+	protected $_builtInFormatCode	= 0;
 
 	/**
 	 * Create a new PHPExcel_Style_NumberFormat
@@ -134,35 +113,14 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 	 *									Leave this value at default unless you understand exactly what
 	 *										its ramifications are
 	 */
-	public function __construct($isSupervisor = false, $isConditional = false)
+	public function __construct($isSupervisor = FALSE, $isConditional = FALSE)
 	{
 		// Supervisor?
-		$this->_isSupervisor = $isSupervisor;
+		parent::__construct($isSupervisor);
 
 		if ($isConditional) {
 			$this->_formatCode = NULL;
 		}
-	}
-
-	/**
-	 * Bind parent. Only used for supervisor
-	 *
-	 * @param PHPExcel_Style $parent
-	 * @return PHPExcel_Style_NumberFormat
-	 */
-	public function bindParent($parent)
-	{
-		$this->_parent = $parent;
-	}
-
-	/**
-	 * Is this a supervisor or a real style component?
-	 *
-	 * @return boolean
-	 */
-	public function getIsSupervisor()
-	{
-		return $this->_isSupervisor;
 	}
 
 	/**
@@ -174,38 +132,6 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 	public function getSharedComponent()
 	{
 		return $this->_parent->getSharedComponent()->getNumberFormat();
-	}
-
-	/**
-	 * Get the currently active sheet. Only used for supervisor
-	 *
-	 * @return PHPExcel_Worksheet
-	 */
-	public function getActiveSheet()
-	{
-		return $this->_parent->getActiveSheet();
-	}
-
-	/**
-	 * Get the currently active cell coordinate in currently active sheet.
-	 * Only used for supervisor
-	 *
-	 * @return string E.g. 'A1'
-	 */
-	public function getSelectedCells()
-	{
-		return $this->getActiveSheet()->getSelectedCells();
-	}
-
-	/**
-	 * Get the currently active cell coordinate in currently active sheet.
-	 * Only used for supervisor
-	 *
-	 * @return string E.g. 'A1'
-	 */
-	public function getActiveCell()
-	{
-		return $this->getActiveSheet()->getActiveCell();
 	}
 
 	/**
@@ -231,7 +157,7 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 	 * </code>
 	 *
 	 * @param	array	$pStyles	Array containing style information
-	 * @throws	Exception
+	 * @throws	PHPExcel_Exception
 	 * @return PHPExcel_Style_NumberFormat
 	 */
 	public function applyFromArray($pStyles = null)
@@ -245,7 +171,7 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 				}
 			}
 		} else {
-			throw new Exception("Invalid style array passed.");
+			throw new PHPExcel_Exception("Invalid style array passed.");
 		}
 		return $this;
 	}
@@ -444,21 +370,6 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 	}
 
 	/**
-	 * Implement PHP __clone to create a deep clone, not just a shallow copy.
-	 */
-	public function __clone()
-	{
-		$vars = get_object_vars($this);
-		foreach ($vars as $key => $value) {
-			if ((is_object($value)) && ($key != '_parent')) {
-				$this->$key = clone $value;
-			} else {
-				$this->$key = $value;
-			}
-		}
-	}
-
-	/**
 	 * Search/replace values to convert Excel date/time format masks to PHP format masks
 	 *
 	 * @var array
@@ -479,8 +390,11 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 			'mmmm'	=> 'F',
 			//	short month name
 			'mmm'	=> 'M',
-			//	mm is minutes if time or month w/leading zero
+			//	mm is minutes if time, but can also be month w/leading zero
+			//	so we try to identify times be the inclusion of a : separator in the mask
+			//	It isn't perfect, but the best way I know how
 			':mm'	=> ':i',
+			'mm:'	=> 'i:',
 			//	month leading zero
 			'mm'	=> 'm',
 			//	month no leading zero

@@ -22,7 +22,7 @@
  * @package		PHPExcel_Calculation
  * @copyright	Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license		http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version		1.7.8, 2012-10-12
+ * @version		##VERSION##, ##DATE##
  */
 
 
@@ -92,7 +92,7 @@ class PHPExcel_Calculation_DateTime {
 				(PHPExcel_Calculation_Functions::getCompatibilityMode() == PHPExcel_Calculation_Functions::COMPATIBILITY_GNUMERIC)) {
 				return PHPExcel_Calculation_Functions::VALUE();
 			}
-			if ((is_object($dateValue)) && ($dateValue instanceof PHPExcel_Shared_Date::$dateTimeObjectType)) {
+			if ((is_object($dateValue)) && ($dateValue instanceof DateTime)) {
 				$dateValue = PHPExcel_Shared_Date::PHPToExcel($dateValue);
 			} else {
 				$saveReturnDateType = PHPExcel_Calculation_Functions::getReturnDateType();
@@ -238,6 +238,10 @@ class PHPExcel_Calculation_DateTime {
 	 * Excel Function:
 	 *		DATE(year,month,day)
 	 *
+	 * PHPExcel is a lot more forgiving than MS Excel when passing non numeric values to this function.
+	 * A Month name or abbreviation (English only at this point) such as 'January' or 'Jan' will still be accepted,
+	 *     as will a day value with a suffix (e.g. '21st' rather than simply 21); again only English language.
+	 *
 	 * @access	public
 	 * @category Date/Time Functions
 	 * @param	integer		$year	The value of the year argument can include one to four digits.
@@ -277,6 +281,14 @@ class PHPExcel_Calculation_DateTime {
 		$year	= PHPExcel_Calculation_Functions::flattenSingleValue($year);
 		$month	= PHPExcel_Calculation_Functions::flattenSingleValue($month);
 		$day	= PHPExcel_Calculation_Functions::flattenSingleValue($day);
+
+		if (($month !== NULL) && (!is_numeric($month))) {
+            $month = PHPExcel_Shared_Date::monthStringToNumber($month);
+		}
+
+		if (($day !== NULL) && (!is_numeric($day))) {
+            $day = PHPExcel_Shared_Date::dayStringToNumber($day);
+		}
 
 		$year	= ($year !== NULL)	? PHPExcel_Shared_String::testStringAsNumeric($year) : 0;
 		$month	= ($month !== NULL)	? PHPExcel_Shared_String::testStringAsNumeric($month) : 0;
@@ -717,6 +729,10 @@ class PHPExcel_Calculation_DateTime {
 			return PHPExcel_Calculation_Functions::VALUE();
 		}
 		if (is_string($endDate = self::_getDateValue($endDate))) {
+			return PHPExcel_Calculation_Functions::VALUE();
+		}
+
+		if (!is_bool($method)) {
 			return PHPExcel_Calculation_Functions::VALUE();
 		}
 

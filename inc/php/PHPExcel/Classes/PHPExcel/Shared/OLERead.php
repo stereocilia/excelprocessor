@@ -22,10 +22,11 @@
  * @package    PHPExcel_Shared
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
-define('IDENTIFIER_OLE', pack('CCCCCCCC', 0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1));
+defined('IDENTIFIER_OLE') ||
+    define('IDENTIFIER_OLE', pack('CCCCCCCC', 0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1));
 
 class PHPExcel_Shared_OLERead {
 	private $data = '';
@@ -70,13 +71,13 @@ class PHPExcel_Shared_OLERead {
 	 * Read the file
 	 *
 	 * @param $sFileName string Filename
-	 * @throws Exception
+	 * @throws PHPExcel_Reader_Exception
 	 */
 	public function read($sFileName)
 	{
 		// Check if file exists and is readable
 		if(!is_readable($sFileName)) {
-			throw new Exception("Could not open " . $sFileName . " for reading! File does not exist, or it is not readable.");
+			throw new PHPExcel_Reader_Exception("Could not open " . $sFileName . " for reading! File does not exist, or it is not readable.");
 		}
 
 		// Get the file data
@@ -84,7 +85,7 @@ class PHPExcel_Shared_OLERead {
 
 		// Check OLE identifier
 		if (substr($this->data, 0, 8) != self::IDENTIFIER_OLE) {
-			throw new Exception('The filename ' . $sFileName . ' is not recognised as an OLE file');
+			throw new PHPExcel_Reader_Exception('The filename ' . $sFileName . ' is not recognised as an OLE file');
 		}
 
 		// Total number of sectors used for the SAT
@@ -131,34 +132,26 @@ class PHPExcel_Shared_OLERead {
 			}
 		}
 
-		$pos = $index = 0;
-		$this->bigBlockChain = array();
-
+		$pos = 0;
+		$this->bigBlockChain = '';
 		$bbs = self::BIG_BLOCK_SIZE / 4;
 		for ($i = 0; $i < $this->numBigBlockDepotBlocks; ++$i) {
 			$pos = ($bigBlockDepotBlocks[$i] + 1) * self::BIG_BLOCK_SIZE;
 
-			for ($j = 0 ; $j < $bbs; ++$j) {
-				$this->bigBlockChain[$index] = self::_GetInt4d($this->data, $pos);
-				$pos += 4 ;
-				++$index;
-			}
+			$this->bigBlockChain .= substr($this->data, $pos, 4*$bbs);
+			$pos += 4*$bbs;
 		}
 
-		$pos = $index = 0;
+		$pos = 0;
 		$sbdBlock = $this->sbdStartBlock;
-		$this->smallBlockChain = array();
-
+		$this->smallBlockChain = '';
 		while ($sbdBlock != -2) {
 			$pos = ($sbdBlock + 1) * self::BIG_BLOCK_SIZE;
 
-			for ($j = 0; $j < $bbs; ++$j) {
-				$this->smallBlockChain[$index] = self::_GetInt4d($this->data, $pos);
-				$pos += 4;
-				++$index;
-			}
+			$this->smallBlockChain .= substr($this->data, $pos, 4*$bbs);
+			$pos += 4*$bbs;
 
-			$sbdBlock = $this->bigBlockChain[$sbdBlock];
+			$sbdBlock = self::_GetInt4d($this->bigBlockChain, $sbdBlock*4);
 		}
 
 		// read the directory stream
@@ -190,7 +183,7 @@ class PHPExcel_Shared_OLERead {
 	  			$pos = $block * self::SMALL_BLOCK_SIZE;
 				$streamData .= substr($rootdata, $pos, self::SMALL_BLOCK_SIZE);
 
-				$block = $this->smallBlockChain[$block];
+				$block = self::_GetInt4d($this->smallBlockChain, $block*4);
 			}
 
 			return $streamData;
@@ -207,7 +200,7 @@ class PHPExcel_Shared_OLERead {
 			while ($block != -2) {
 				$pos = ($block + 1) * self::BIG_BLOCK_SIZE;
 				$streamData .= substr($this->data, $pos, self::BIG_BLOCK_SIZE);
-				$block = $this->bigBlockChain[$block];
+				$block = self::_GetInt4d($this->bigBlockChain, $block*4);
 			}
 
 			return $streamData;
@@ -228,7 +221,7 @@ class PHPExcel_Shared_OLERead {
 		while ($block != -2)  {
 			$pos = ($block + 1) * self::BIG_BLOCK_SIZE;
 			$data .= substr($this->data, $pos, self::BIG_BLOCK_SIZE);
-			$block = $this->bigBlockChain[$block];
+			$block = self::_GetInt4d($this->bigBlockChain, $block*4);
 		}
 		return $data;
 	 }
@@ -259,19 +252,22 @@ class PHPExcel_Shared_OLERead {
 
 			$name = str_replace("\x00", "", substr($d,0,$nameSize));
 
+
 			$this->props[] = array (
 				'name' => $name,
 				'type' => $type,
 				'startBlock' => $startBlock,
 				'size' => $size);
 
+			// tmp helper to simplify checks
+			$upName = strtoupper($name);
+
 			// Workbook directory entry (BIFF5 uses Book, BIFF8 uses Workbook)
-			if (($name == 'Workbook') || ($name == 'Book') || ($name == 'WORKBOOK') || ($name == 'BOOK')) {
+			if (($upName === 'WORKBOOK') || ($upName === 'BOOK')) {
 				$this->wrkbook = count($this->props) - 1;
 			}
-
-			// Root entry
-			if ($name == 'Root Entry' || $name == 'ROOT ENTRY' || $name == 'R') {
+			else if ( $upName === 'ROOT ENTRY' || $upName === 'R') {
+				// Root entry
 				$this->rootentry = count($this->props) - 1;
 			}
 

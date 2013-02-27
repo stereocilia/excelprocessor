@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * @category	PHPExcel
- * @package		PHPExcel_Chart
+ * @package		PHPExcel_Chart_Renderer
  * @copyright	Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license		http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version		1.7.8, 2012-10-12
+ * @version		##VERSION##, ##DATE##
  */
 
 
@@ -107,13 +107,11 @@ class PHPExcel_Chart_Renderer_jpgraph
 
 		$testCurrentIndex = 0;
 		foreach($datasetLabels as $i => $datasetLabel) {
-			array_reverse($datasetLabel);
-
 			if (is_array($datasetLabel)) {
 				if ($rotation == 'bar') {
-					$datasetLabel = array_reverse($datasetLabel);
 					$datasetLabels[$i] = implode(" ",$datasetLabel);
 				} else {
+					$datasetLabel = array_reverse($datasetLabel);
 					$datasetLabels[$i] = implode("\n",$datasetLabel);
 				}
 			} else {

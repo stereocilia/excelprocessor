@@ -22,7 +22,7 @@
  * @package    PHPExcel_CachedObjectStorage
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -36,12 +36,20 @@
 class PHPExcel_CachedObjectStorage_Memory extends PHPExcel_CachedObjectStorage_CacheBase implements PHPExcel_CachedObjectStorage_ICache {
 
     /**
+     * Dummy method callable from CacheBase, but unused by Memory cache
+     *
+	 * @return	void
+     */
+	protected function _storeData() {
+	}	//	function _storeData()
+
+    /**
      * Add or Update a cell in cache identified by coordinate address
      *
      * @param	string			$pCoord		Coordinate address of the cell to update
      * @param	PHPExcel_Cell	$cell		Cell to update
 	 * @return	void
-     * @throws	Exception
+     * @throws	PHPExcel_Exception
      */
 	public function addCacheData($pCoord, PHPExcel_Cell $cell) {
 		$this->_cellCache[$pCoord] = $cell;
@@ -53,7 +61,7 @@ class PHPExcel_CachedObjectStorage_Memory extends PHPExcel_CachedObjectStorage_C
      * Get cell at a specific coordinate
      *
      * @param 	string 			$pCoord		Coordinate of the cell
-     * @throws 	Exception
+     * @throws 	PHPExcel_Exception
      * @return 	PHPExcel_Cell 	Cell that was found, or null if not found
      */
 	public function getCacheData($pCoord) {

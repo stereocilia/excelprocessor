@@ -22,7 +22,7 @@
  * @package    PHPExcel_Shared
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -82,7 +82,7 @@ class PHPExcel_Shared_ZipStreamWrapper {
     public function stream_open($path, $mode, $options, &$opened_path) {
         // Check for mode
         if ($mode{0} != 'r') {
-            throw new Exception('Mode ' . $mode . ' is not supported. Only read mode is supported.');
+            throw new PHPExcel_Reader_Exception('Mode ' . $mode . ' is not supported. Only read mode is supported.');
         }
 
 		$pos = strrpos($path, '#');
@@ -98,6 +98,24 @@ class PHPExcel_Shared_ZipStreamWrapper {
         $this->_data = $this->_archive->getFromName( $this->_fileNameInArchive );
 
         return true;
+    }
+
+    /**
+	 * Implements support for fstat().
+	 *
+	 * @return  boolean
+     */
+    public function statName() {
+        return $this->_fileNameInArchive;
+    }
+
+    /**
+	 * Implements support for fstat().
+	 *
+	 * @return  boolean
+     */
+    public function url_stat() {
+        return $this->statName( $this->_fileNameInArchive );
     }
 
     /**

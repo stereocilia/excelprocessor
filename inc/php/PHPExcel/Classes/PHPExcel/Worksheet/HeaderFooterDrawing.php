@@ -22,7 +22,7 @@
  * @package    PHPExcel_Worksheet
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -296,7 +296,7 @@ class PHPExcel_Worksheet_HeaderFooterDrawing extends PHPExcel_Worksheet_Drawing 
      *
      * @param 	string 		$pValue			File path
      * @param 	boolean		$pVerifyFile	Verify file
-     * @throws 	Exception
+     * @throws 	PHPExcel_Exception
      * @return PHPExcel_Worksheet_HeaderFooterDrawing
      */
     public function setPath($pValue = '', $pVerifyFile = true) {
@@ -309,7 +309,7 @@ class PHPExcel_Worksheet_HeaderFooterDrawing extends PHPExcel_Worksheet_Drawing 
 	    			list($this->_width, $this->_height) = getimagesize($pValue);
 	    		}
 	    	} else {
-	    		throw new Exception("File $pValue not found!");
+	    		throw new PHPExcel_Exception("File $pValue not found!");
 	    	}
     	} else {
     		$this->_path = $pValue;

@@ -22,7 +22,7 @@
  * @package    PHPExcel_CachedObjectStorage
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    1.7.8, 2012-10-12
+ * @version    ##VERSION##, ##DATE##
  */
 
 
@@ -106,7 +106,7 @@ abstract class PHPExcel_CachedObjectStorage_CacheBase {
      *
      * @param	PHPExcel_Cell	$cell		Cell to update
 	 * @return	void
-     * @throws	Exception
+     * @throws	PHPExcel_Exception
      */
 	public function updateCacheData(PHPExcel_Cell $cell) {
 		return $this->addCacheData($cell->getCoordinate(),$cell);
@@ -117,7 +117,7 @@ abstract class PHPExcel_CachedObjectStorage_CacheBase {
      * Delete a cell in cache identified by coordinate address
      *
      * @param	string			$pCoord		Coordinate address of the cell to delete
-     * @throws	Exception
+     * @throws	PHPExcel_Exception
      */
 	public function deleteCacheData($pCoord) {
 		if ($pCoord === $this->_currentObjectID) {
@@ -232,6 +232,9 @@ abstract class PHPExcel_CachedObjectStorage_CacheBase {
 	 * @return	void
 	 */
 	public function copyCellCollection(PHPExcel_Worksheet $parent) {
+		$this->_currentCellIsDirty;
+        $this->_storeData();
+
 		$this->_parent = $parent;
 		if (($this->_currentObject !== NULL) && (is_object($this->_currentObject))) {
 			$this->_currentObject->attach($parent);

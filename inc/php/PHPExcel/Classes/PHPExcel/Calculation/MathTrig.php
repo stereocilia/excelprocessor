@@ -22,7 +22,7 @@
  * @package		PHPExcel_Calculation
  * @copyright	Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license		http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version		1.7.8, 2012-10-12
+ * @version		##VERSION##, ##DATE##
  */
 
 
@@ -79,7 +79,7 @@ class PHPExcel_Calculation_MathTrig {
 	 * ATAN2
 	 *
 	 * This function calculates the arc tangent of the two variables x and y. It is similar to
-	 *		calculating the arc tangent of y ÷ x, except that the signs of both arguments are used
+	 *		calculating the arc tangent of y Ã· x, except that the signs of both arguments are used
 	 *		to determine the quadrant of the result.
 	 * The arctangent is the angle from the x-axis to a line containing the origin (0, 0) and a
 	 *		point with coordinates (xCoordinate, yCoordinate). The angle is given in radians between
@@ -547,7 +547,7 @@ class PHPExcel_Calculation_MathTrig {
 		try {
 			$matrix = new PHPExcel_Shared_JAMA_Matrix($matrixData);
 			return $matrix->det();
-		} catch (Exception $ex) {
+		} catch (PHPExcel_Exception $ex) {
 			return PHPExcel_Calculation_Functions::VALUE();
 		}
 	}	//	function MDETERM()
@@ -589,7 +589,7 @@ class PHPExcel_Calculation_MathTrig {
 		try {
 			$matrix = new PHPExcel_Shared_JAMA_Matrix($matrixData);
 			return $matrix->inverse()->getArray();
-		} catch (Exception $ex) {
+		} catch (PHPExcel_Exception $ex) {
 			return PHPExcel_Calculation_Functions::VALUE();
 		}
 	}	//	function MINVERSE()
@@ -642,7 +642,7 @@ class PHPExcel_Calculation_MathTrig {
 			}
 
 			return $matrixA->times($matrixB)->getArray();
-		} catch (Exception $ex) {
+		} catch (PHPExcel_Exception $ex) {
 			return PHPExcel_Calculation_Functions::VALUE();
 		}
 	}	//	function MMULT()
