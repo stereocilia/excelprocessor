@@ -25,22 +25,22 @@ class excelWorkbook {
      * Array of all indecies of column heading rows for every sheets in excelWorkbook member variable
      * @var array 
      */
-    private $columnHeadingIndices = array();
+    private $_columnHeadingIndices = array();
     /**
      * The row length of each column heading index row
      * @var array 
      */
-    private $columnHeadingIndicesLength = array();
+    private $_columnHeadingIndicesLength = array();
     /**
      * The row index of each sheet in _excelWorkbook member variable that is considered to be the last row of the dataset
      * @var array 
      */
-    private $lastDatasetRows = array();
+    private $_lastDatasetRows = array();
     /**
      * Count of Excel Worksheets in the excelWorkbook member variable
      * @var int 
      */
-    private $sheetCount = 0;
+    private $_sheetCount = 0;
     /**
      * Letter based index of hidden columns for each Worksheet
      * @var array 
@@ -71,7 +71,7 @@ class excelWorkbook {
                 
             $this->checkLoadWithException(__FUNCTION__);                        //make sure something is loaded or everything will fail
             
-            $this->sheetCount = $this->_excelWorkbook->getSheetCount();
+            $this->_sheetCount = $this->_excelWorkbook->getSheetCount();
             
             //make temporary array the represents all the sheets
             $ryExcelWorksheetAssoc = array();
@@ -94,10 +94,10 @@ class excelWorkbook {
             //TODO: PRBO - find the merged cells in the dataset with the new indices information
             
             for($i=0;$i < count($this->_ryExcelWorksheets);$i++){                 //loop through each worksheet
-               $dataSetLength = $this->lastDatasetRows[$i]+1 - $this->columnHeadingIndices[$i];
-               $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->columnHeadingIndices[$i]-1, $dataSetLength);
+               $dataSetLength = $this->_lastDatasetRows[$i]+1 - $this->_columnHeadingIndices[$i];
+               $this->_ryExcelWorksheets[$i] = array_slice($this->_ryExcelWorksheets[$i], $this->_columnHeadingIndices[$i]-1, $dataSetLength);
                
-               $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
+               $this->_ryExcelWorksheets[$i] = $this->removeColumnsBeyondBounds($this->_ryExcelWorksheets[$i], $this->_columnHeadingIndicesLength[$i]);   //removes data longer than the column heading length
                $this->_ryExcelWorksheets[$i] = $this->removeNullRows($this->_ryExcelWorksheets[$i]);        //remove null rows
             }
             
@@ -215,10 +215,10 @@ class excelWorkbook {
      */
     private function findColumnHeadingIndices(){
             //must already have sheet count for this to work
-            for($i=0;$i<$this->sheetCount;$i++){
-                $this->columnHeadingIndices[] = $this->findColumnHeadingIndex($i);
-                $columnHeadingRow = $this->_ryExcelWorksheets[$i][ ($this->columnHeadingIndices[$i]-1) ];  //column heading row of the current sheet, as an array of cells
-                $this->columnHeadingIndicesLength[] = $this->consecutiveDataCellCount($columnHeadingRow);  //the count of consecutively filled cells of data
+            for($i=0;$i<$this->_sheetCount;$i++){
+                $this->_columnHeadingIndices[] = $this->findColumnHeadingIndex($i);
+                $columnHeadingRow = $this->_ryExcelWorksheets[$i][ ($this->_columnHeadingIndices[$i]-1) ];  //column heading row of the current sheet, as an array of cells
+                $this->_columnHeadingIndicesLength[] = $this->consecutiveDataCellCount($columnHeadingRow);  //the count of consecutively filled cells of data
             }
     }
     /**
@@ -249,7 +249,7 @@ class excelWorkbook {
     public function findColumnHeadingIndex($sheetIndex = 0){
         $columnHeadingIndex = NULL;                                             //must already have an array of excel worksheets for this to work
         
-        if($sheetIndex < $this->sheetCount){                                    //index must be within sheet count
+        if($sheetIndex < $this->_sheetCount){                                    //index must be within sheet count
             $ryDataFilledCellCounts = array();
 
             foreach($this->_ryExcelWorksheets[$sheetIndex] as $row){                                            //go through each row
@@ -262,7 +262,7 @@ class excelWorkbook {
         
             return $columnHeadingIndex;
         }  else {
-            excelError::throwError(new Exception("Sheet index out of bounds. sheetIndex is $sheetIndex : sheetCount is " . $this->sheetCount));
+            excelError::throwError(new Exception("Sheet index out of bounds. sheetIndex is $sheetIndex : sheetCount is " . $this->_sheetCount));
         } 
         
     }
@@ -271,8 +271,8 @@ class excelWorkbook {
      */
     private function findLastDatasetRows(){
         //find the last dataset row of each sheet
-        for($i=0;$i<$this->sheetCount;$i++){
-            $this->lastDatasetRows[] = $this->findLastDatasetRow($i, $this->columnHeadingIndices[$i]-1);
+        for($i=0;$i<$this->_sheetCount;$i++){
+            $this->_lastDatasetRows[] = $this->findLastDatasetRow($i, $this->_columnHeadingIndices[$i]-1);
         } 
        
     }
@@ -284,7 +284,7 @@ class excelWorkbook {
     private function findLastDatasetRow($sheetIndex = 0, $startRow = 0){
         //find the first row after the column heading row where the first cell is empty. this will be the last row of the dataset
         $lastRow = NULL;
-        if($sheetIndex < $this->sheetCount){                                      //given index must be in range
+        if($sheetIndex < $this->_sheetCount){                                      //given index must be in range
             $sheet = $this->_ryExcelWorksheets[$sheetIndex];
             for($i=$startRow;$i<count($sheet) && $lastRow === NULL ;$i++){
                 if(  ( empty($sheet[$i][0]) || $sheet[$i][0] == "null" )  ){            //if the first cell is empty or null and last row has yet been found
@@ -296,7 +296,7 @@ class excelWorkbook {
             }
             return $lastRow;
         } else {
-            excelError::throwError(new Exception("Sheet index out of bounds. sheetIndex is $sheetIndex : sheetCount is " . $this->sheetCount));
+            excelError::throwError(new Exception("Sheet index out of bounds. sheetIndex is $sheetIndex : sheetCount is " . $this->_sheetCount));
         }
         
     }
@@ -347,7 +347,7 @@ class excelWorkbook {
         $cellTypes = array();
         $i = 0;
         $sheet = $this->_ryExcelWorksheets[$sheetIndex];                        //get the sheet asked for
-        $row = $sheet[ $this->columnHeadingIndices[$sheetIndex] ];           //use the row after the columnHeadingIndex for this sheet
+        $row = $sheet[ $this->_columnHeadingIndices[$sheetIndex] ];           //use the row after the columnHeadingIndex for this sheet
         foreach($row as $cell){                                                 //get the type for each cell
             switch($primitiveTypes[$i]){                                        //using a switch statement here because all values are known
                 case "s" :
@@ -403,7 +403,7 @@ class excelWorkbook {
     private function getColumnPrimitiveDataTypes($sheetIndex = 0){
         $rowIterator = $this->_excelWorkbook->getSheet($sheetIndex)->getRowIterator();
         //get the iterator one row after the column index
-        for($i=1;$i<=$this->columnHeadingIndices[$sheetIndex];$i++){
+        for($i=1;$i<=$this->_columnHeadingIndices[$sheetIndex];$i++){
             $rowIterator->next();
         }
         //get the generic data types for each cell and store them in an array
