@@ -19,10 +19,14 @@ if(ob_get_length()){                                                            
 
 ob_end_clean();                                                                 //stop caching and clear buffer
 
-header('HTTP/1.1 200 OK');
-header("Cache-Control: no-cache, must-revalidate");
-header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-header('Content-Type: application/json; charset=utf-8');
-header('Content-Length: ' . strlen($output));
-echo $output;
+sendOutput($output);
+
+function sendOutput($output){                                                   //added as function to separate header function code
+    header('HTTP/1.1 200 OK');
+    header("Cache-Control: no-cache, must-revalidate");
+    header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Length: ' . strlen($output));
+    echo $output;    
+}
 ?>
