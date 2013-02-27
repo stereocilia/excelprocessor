@@ -56,9 +56,12 @@ class excelWorkbook {
         if($PHPExcelFile){
             $this->_excelWorkbook = $PHPExcelFile;
         }
-         if($this->_excelWorkbook){
+        if($this->_excelWorkbook){
             $this->_hasLoaded = TRUE;
             $this->excelWorkbookChanged();
+        } else {
+            $e = new excelError();
+            $e->loadExceptionAndThrowAsJSON( new Exception("load function called with no excelWorkbook object available.") );
         }
         
     }
@@ -200,13 +203,18 @@ class excelWorkbook {
      * @return array
      */
     private function makePlainArray($ry){
-        foreach($ry as &$element){
-            if(is_array($element)){
-                $element = $this->makePlainArray($element);
+        if(is_array($ry)){
+            foreach($ry as &$element){
+                if(is_array($element)){
+                    $element = $this->makePlainArray($element);
+                }
             }
+            $ry = array_values($ry);
+            return $ry;
+        } else {
+            $e = new excelError();
+            $e->loadExceptionAndThrowAsJSON( new Exception("makePlainArray passed argument that is not an array") );
         }
-        $ry = array_values($ry);
-        return $ry;
     }
     /**
      * Find the indices of all column heading rows for all sheets in _ryExcelWorksheets member variable

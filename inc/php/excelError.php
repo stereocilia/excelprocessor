@@ -39,10 +39,15 @@ class excelError {
     }
     
     public function loadException(Exception $e){
-        $this->ryError[self::KEYERRORMSG] = $e->getMessage();
+        $this->ryError[self::KEYERRORMSG] = $e->getMessage() . "<br>";
         $this->ryError[self::KEYERRORMSG] .= $e->getFile() . "<br>";
         $this->ryError[self::KEYERRORMSG] .= $e->getLine() . "<br>";
         $this->ryError[self::KEYERRORMSG] .= $e->getTraceAsString() . "<br>";
+    }
+    
+    public function loadExceptionAndThrowAsJSON(Exception $e){
+        $this->loadException($e);
+        $this->throwSelfAsJSON();
     }
     
     public function addToMessage($msg){
