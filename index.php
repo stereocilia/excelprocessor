@@ -16,7 +16,7 @@
             var excelFilePath = "userdata/data.csv";                               //for debug only. AJAX file upload should assign this value otherwise.
             //The message displayed while Excel file is being
             var loadingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
-            var updatingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
+            var updatingMessage = 'Please wait while your file is being updated.<br><img src="img/loader32.gif"/>';
             
             function loadExcelClick(){                                              //fires when link is clicked
                 $('#results').html(loadingMessage).show();                           //show the loading message and animation

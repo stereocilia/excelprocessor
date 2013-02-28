@@ -11,8 +11,11 @@ $requestData = json_decode(  stripcslashes( $_GET['data'] )  );                 
 
 $pageController = new controllerExcelTransaction();                             //create a controller
 
-$output = $pageController->handleRequest($requestData);                         //give the request data to the controller
-
+try{
+    $output = $pageController->handleRequest($requestData);                         //give the request data to the controller
+} catch(Exception $e){
+    $output = excelError::catchExceptionToJSON($e);
+}
 if(ob_get_length()){                                                            //if compiler tried to send output already, there was an error
     $output = json_encode(  excelError::createJSONError( ob_get_contents() )  );    //create error message out of the contents
 }

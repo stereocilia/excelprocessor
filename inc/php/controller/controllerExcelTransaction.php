@@ -21,6 +21,7 @@ class controllerExcelTransaction {
      */
     public function __construct() {
         $this->_strategies["get"] = new handleGetExcelRequest();
+        $this->_strategies["update"] = new handleUpdateExcelRequest();
         $this->_strategies["commit"] = new handleCommitExcelRequest();
         $this->_strategies["getAll"] = new handleGetAllExcelRequest();
     }
@@ -110,7 +111,46 @@ class handleGetExcelRequest extends handleRequestAbstract implements IHandleRequ
         return json_encode( $ryWorkbook );                             //send back the resulting object as JSON
     }
 }
+/**
+ * Handles the request action 'update'
+ * 
+ * The get request action show a preview of information that will be commit to the database. This will most likely be the most common type of request
+ * 
+ */
+class handleUpdateExcelRequest extends handleRequestAbstract implements IHandleRequestStrategy{
+    /**
+     * Call when the JSON object's property action is set to 'get'
+     * @return string The string returned is a JSON object that represent the ExcelSheet object that has been loaded
+     */
+    public function handleRequest($requestData) {
+        
+        $loader = new modelExcelTransaction();
+        
+        if( isset($requestData->showPreview) ){                                 //if the preview option was set in the JSON object passed, limit the amount of returned rows
+            if ($requestData->showPreview == FALSE){
+                $loader->isPreview = FALSE;
+            }
+        }
+        
+        $loader->previewLength = 100;                                             //how many rows will be previewed. default to 10
 
+        try{
+            $workbook = $loader->load($requestData->excelFilePath);                 //load the object with data from the excel file
+        } catch(Exception $e){
+            return excelError::catchExceptionToJSON($e);
+        }
+        
+        $ryWorkbook = $workbook->toArray();
+        
+        //make the sheet data displayable for HTML
+        foreach($ryWorkbook[jsonKeys::excelWorksheets] as $sheet){
+            $htmlSafeSheetData = $this->makeWorksheetHTMLSafe( $sheet[jsonKeys::sheetData] );
+            $sheet[jsonKeys::sheetData] = $htmlSafeSheetData;   
+        }
+        
+        return json_encode( $ryWorkbook );                             //send back the resulting object as JSON
+    }
+}
 /**
  * Enters excel data into a mySQL database
  */

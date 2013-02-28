@@ -107,7 +107,7 @@ class excelError {
         $ryError[self::KEYTYPE] = self::VALTYPEGENERAL;        
         if($error){                                                             //if not null
             if(is_string($error)){                                              //if a string
-                if( !empty($msg) ){                                             //if string not empty
+                if( !empty($error) ){                                             //if string not empty
                    $ryError[self::KEYERRORMSG] = $error;                        //set error message to passed string
                } else {
                    $ryError[self::KEYERRORMSG] = self::MSGDEFAULTERROR;         //use default error if empty string
@@ -122,6 +122,13 @@ class excelError {
             }
         }
         throw self::makeJSONException($ryError);
+    }
+    
+    static public function catchExceptionToJSON(Exception $e){
+        if(strpos($e->getMessage(), excelError::SELFTHROWN)!== FALSE){
+            return substr($e->getMessage(), strlen(excelError::SELFTHROWN));
+        }
+        return json_encode(  excelError::createJSONError( $e->getMessage() )  );
     }
     
     static private function makeJSONException(array $ryError){
