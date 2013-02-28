@@ -17,6 +17,7 @@ class jsonKeys {
     const sheetData = "sheetData";
     const responseStatus = "responseStatus";
     const responseSuccess = "success";
+    const excelFilePath = "excelFilePath";
 }
 
 ?>

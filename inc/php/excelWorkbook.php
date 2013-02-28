@@ -51,6 +51,11 @@ class excelWorkbook {
      * @var boolean 
      */
     private $_hasLoaded = false;
+    /**
+     * Path to the loaded Excel File
+     * @var string 
+     */
+    public $excelFilePath = "";
     
     public function __construct(PHPExcel $PHPExcelFile = NULL) {
         $this->_excelWorkbook = $PHPExcelFile;
@@ -349,6 +354,7 @@ class excelWorkbook {
             }
             
             $ryReturn[jsonKeys::responseStatus] = jsonKeys::responseSuccess;                                                    //say everything went well
+            $ryReturn[jsonKeys::excelFilePath] = $this->excelFilePath;
             
         } else {                                                                                        //no workbook, no array
             if(!$this->_excelWorkbook){

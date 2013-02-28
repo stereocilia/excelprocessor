@@ -131,7 +131,8 @@ class handleUpdateExcelRequest extends handleRequestAbstract implements IHandleR
                 $loader->isPreview = FALSE;
             }
         }
-        
+        //TODO: - PRBO - handleUpdateExcelRequest - Add settings to the session var
+        //TODO: - PRBO - handleUpdateExcelRequest - Add settings that will be changed here
         $loader->previewLength = 100;                                             //how many rows will be previewed. default to 10
 
         try{
