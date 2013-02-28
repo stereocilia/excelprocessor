@@ -7,17 +7,25 @@
     
     <body>
         <a href="javascript:loadExcelClick();">Load Excel File</a>
+        <br>
+        <a href="javascript:updateExcelClick();">Update Excel File</a>
         <div id="results" style="display: none;"></div>
         <!-- SCRIPTS -->
         <?php include('inc/php/jsInclude.php');                                     //includes all the javascript files needed ?>
         <script type="text/javascript">
-            var excelFilePath = "userdata/simple.csv";                               //for debug only. AJAX file upload should assign this value otherwise.
+            var excelFilePath = "userdata/data.csv";                               //for debug only. AJAX file upload should assign this value otherwise.
             //The message displayed while Excel file is being
             var loadingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
-
+            var updatingMessage = 'Please wait while your file is being loaded.<br><img src="img/loader32.gif"/>';
+            
             function loadExcelClick(){                                              //fires when link is clicked
                 $('#results').html(loadingMessage).show();                           //show the loading message and animation
                 excelFile.get(excelFilePath);                                       //gets the specified Excel file and returns a JSON string
+            }
+            
+            function updateExcelClick(){
+                $('#results').html(updatingMessage).show();                           //show the loading message and animation
+                excelFile.update(excelFilePath);                                       //gets the specified Excel file and returns a JSON string
             }
 
             //displayExcelData function MUST be implemented
@@ -59,7 +67,6 @@
             }
         </script>
         <!--//TODO: PRBO - Should the interface enable selection of sheets that will be included / not included in the final commit? -->
-        <!--//TODO: PRBO - CSV and ODT files: make sure code works with these files -->
         <!--//TODO: PRBO - If merged cells detected in DATASET, through error -->
         <!--//TODO: PRBO - Decided a different row is the start row, how many to submit, and which columns to load -->
         

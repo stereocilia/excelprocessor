@@ -43,7 +43,14 @@ excelFile.commit = function(excelFilePath){
     er.showPreview = true;  //always returns a sample of the data in the excel file
     this.sendRequest(tr);
 }
-
+/**
+ * Creates a preview of the file with the options selected by the user
+ */
+excelFile.update = function(excelFilePath){
+    var tr = new transactionRequest(excelFilePath, "update");
+    tr.showPreview = true;  //always returns a sample of the data in the excel file
+    this.sendRequest(tr);
+}
 
 /**
  * Gets the file located at the given path and returns it to the displayData function

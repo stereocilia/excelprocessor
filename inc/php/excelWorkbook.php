@@ -77,12 +77,12 @@ class excelWorkbook {
             
             
             //Remove worksheets with less that two rows, they do not represent a dataset
-            $key = 0;
+            $sheetIndex = 0;
             foreach($this->_excelWorkbook->getAllSheets() as $sheet){
                 if(  $sheet->getHighestRow() < 2  ){
-                    $this->_excelWorkbook->removeSheetByIndex($key);
+                    $this->_excelWorkbook->removeSheetByIndex($sheetIndex);
                 } else {
-                    $key++;
+                    $sheetIndex++;
                 }
             }
             
