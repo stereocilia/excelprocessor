@@ -84,6 +84,8 @@
         If the user does not want a particular worksheet it will be deselected. 
         This will also be the same process for removing columns that are unwanted.
         Also, the user should be allowed to select a different row that is the heading row.
+        I want to use jQuery tabs, one per sheet. http://jqueryui.com/tabs/#vertical
+        The vertical tabs seems like the would work well. I want each tab to have a check mark by it to include that worksheet
         -->
         <!--//TODO: PRBO - If merged cells detected in DATASET during commit, through error -->
         <!--//TODO: PRBO - Things to think about the future: Mapping from the excel spreadsheet into the database -->
