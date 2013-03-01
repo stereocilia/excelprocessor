@@ -78,10 +78,14 @@
                 }
             }
         </script>
-        <!--//TODO: PRBO - Should the interface enable selection of sheets that will be included / not included in the final commit? -->
-        <!--//TODO: PRBO - If merged cells detected in DATASET, through error -->
-        <!--//TODO: PRBO - Decided a different row is the start row, how many to submit, and which columns to load -->
         
+        <!--//TODO: PRBO - BOOKMARK: The last thing you were doing was create a ui that allows the user to deselect items they do not want in their worksheet. SEE note below.-->
+        <!--//NOTE: Worksheets will have check boxes by them that are already selected. 
+        If the user does not want a particular worksheet it will be deselected. 
+        This will also be the same process for removing columns that are unwanted.
+        Also, the user should be allowed to select a different row that is the heading row.
+        -->
+        <!--//TODO: PRBO - If merged cells detected in DATASET during commit, through error -->
         <!--//TODO: PRBO - Things to think about the future: Mapping from the excel spreadsheet into the database -->
     </body>
 </html>
